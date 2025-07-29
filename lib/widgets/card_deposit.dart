@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 class cardDeposit extends StatelessWidget {
+  final String text;
+  final String image;
+  final String routeName;
+  final Map<String, String>? pathParameters;
+
   const cardDeposit({
     super.key,
     required this.text,
     required this.image,
     required this.routeName,
+    this.pathParameters,
   });
-
-  final String text;
-  final String image;
-  final String routeName;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +28,18 @@ class cardDeposit extends StatelessWidget {
       ),
       child: GestureDetector(
         onTap: () {
-          context.push(routeName);
+          if (pathParameters != null) {
+            context.pushNamed(routeName, pathParameters: pathParameters!);
+          } else {
+            context.pushNamed(routeName);
+          }
         },
         child: SizedBox(
           // color: Colors.amberAccent,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Image.asset(image, scale: 1.2),
+              SvgPicture.asset(image, width: 70.w),
               Text(
                 text,
                 style: TextStyle(

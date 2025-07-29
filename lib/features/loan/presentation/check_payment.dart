@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moblie_banking/features/loan/presentation/detail_check_payment.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
+import 'package:moblie_banking/widgets/appbar.dart';
 
 class CheckPaymentScreen extends StatefulWidget {
   const CheckPaymentScreen({super.key});
@@ -18,18 +19,7 @@ class _CheckPaymentScreenState extends State<CheckPaymentScreen> {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.color1,
-        leading: IconButton(
-          icon: Image.asset(AppImage.back, color: Colors.white, height: 24),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'ກວດສອບການຊຳລະ',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
+      appBar: GradientAppBar(title: 'ກວດສອບການຊຳລະ'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moblie_banking/widgets/appbar.dart';
 import '../../../core/utils/app_colors.dart';
 import '../../../core/utils/app_image.dart';
 
@@ -9,25 +10,7 @@ class DetailCheckPaymentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppColors.color1,
-        centerTitle: true,
-        leading: InkWell(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Image.asset(AppImage.back),
-        ),
-        title: const Text(
-          'ກວດສອບການຊຳລະ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      appBar: GradientAppBar(title: 'ກວດສອບການຊຳລະ'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

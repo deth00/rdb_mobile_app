@@ -19,7 +19,7 @@ class OtpRegister extends ConsumerStatefulWidget {
 }
 
 class _OtpRegisterState extends ConsumerState<OtpRegister> {
-  late final codecontroller = TextEditingController();
+  final codecontroller = TextEditingController();
   String? phone;
 
   @override

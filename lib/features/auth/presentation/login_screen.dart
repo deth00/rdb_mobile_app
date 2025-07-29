@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/core/utils/snackbar_helper.dart';
+import 'package:moblie_banking/core/utils/svg_icons.dart';
 import 'package:moblie_banking/features/auth/logic/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -16,8 +19,23 @@ class LoginScreen extends ConsumerStatefulWidget {
 bool _isObscure = true;
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late final phoneControl = TextEditingController();
-  late final pwControl = TextEditingController();
+  final phoneControl = TextEditingController();
+  final pwControl = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(authNotifierProvider.notifier).load();
+      // Load saved phone number and display it
+      final savedPhone = await ref.read(secureStorageProvider).getPhone();
+      if (savedPhone != null && savedPhone.isNotEmpty) {
+        setState(() {
+          phoneControl.text = savedPhone;
+        });
+      }
+    });
+  }
+
   @override
   void dispose() {
     phoneControl.dispose();
@@ -48,257 +66,343 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     await ref.read(authNotifierProvider.notifier).login(phone, password);
     if (context.mounted) Navigator.of(context).pop();
-    final authState = ref.watch(authNotifierProvider);
+    final authState = ref.read(authNotifierProvider);
 
     if (authState.isLoggedIn) {
       if (mounted) {
-        context.go('/home');
+        context.goNamed('home');
       }
     } else {
       showCustomSnackBar(context, 'ເບີໂທ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກ', isError: true);
     }
   }
 
+  Future<void> _bioLogin() async {
+    // Check if biometric is enabled first
+    final currentAuthState = ref.read(authNotifierProvider);
+    if (!currentAuthState.isBiometricEnabled) {
+      showCustomSnackBar(
+        context,
+        'ກະລຸນາເປີດໃຊ້ງານການຢືນຢັນຕົວຕົນໃນການຕັ້ງຄ່າ',
+        isError: true,
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // กดนอก dialog ไม่ให้ปิด
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(), // หรือ Lottie ก็ได้
+      ),
+    );
+
+    try {
+      await ref.read(authNotifierProvider.notifier).biometricLogin();
+      final authState = ref.read(authNotifierProvider);
+      if (context.mounted) Navigator.of(context).pop();
+      if (authState.isLoggedIn) {
+        if (mounted) {
+          context.goNamed('home');
+        }
+      } else {
+        showCustomSnackBar(
+          context,
+          'ຢືນຢັນຕົວຕົນດ້ວຍ Biometric ບໍ່ສຳເລັດ',
+          isError: true,
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.of(context).pop();
+      showCustomSnackBar(context, 'ການຢືນຢັນຕົວຕົນລົ້ມເຫລວ', isError: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     final isLoading = ref.watch(authNotifierProvider).isLoading;
     final authController = ref.read(authNotifierProvider.notifier);
+    final authState = ref.watch(authNotifierProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: fixedSize * 0.035),
-              Center(child: Image.asset(AppImage.logoRDB, scale: 1.2)),
-              Container(
-                height: fixedSize * 0.29,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(AppImage.bglogin),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    SizedBox(height: fixedSize * 0.02),
-                    Container(
-                      height: fixedSize * 0.045,
-                      width: fixedSize * 0.29,
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: fixedSize * 0.0045,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: AppTextField(
-                        textInputType: TextInputType.phone,
-                        obs: false,
-                        controller: phoneControl,
-                        text: 'ເບີໂທ 020 xxxx xxxx',
-                        icon: const Icon(
-                          Icons.account_circle,
-                          color: Colors.grey,
-                        ),
-                      ),
+              SizedBox(height: 50.h),
+              // Image.asset(AppImage.logoRDB, height: 180.h),
+              Center(child: SvgPicture.asset(SvgIcons.logoApp, height: 180.h)),
+              Stack(
+                children: [
+                  SvgPicture.asset(SvgIcons.loginBg),
+                  Container(
+                    height: 350.h,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      // image: DecorationImage(
+                      //   image: AssetImage(AppImage.bglogin),
+                      //   scale: 1.2,
+                      //   fit: BoxFit.cover,
+                      // ),
                     ),
-                    SizedBox(height: fixedSize * 0.02),
-                    Container(
-                      height: fixedSize * 0.045,
-                      width: fixedSize * 0.29,
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: fixedSize * 0.0045,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: AppTextField(
-                        textInputType: TextInputType.multiline,
-                        obs: _isObscure,
-                        controller: pwControl,
-                        text: 'ລະຫັດ: ********',
-                        icon: const Icon(Icons.lock_reset, color: Colors.grey),
-                        icon1: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: fixedSize * 0.02),
-                    Consumer(
-                      builder: (context, ref, _) => GestureDetector(
-                        onTap: isLoading ? null : _login,
-
-                        child: Container(
-                          height: fixedSize * 0.045,
-                          width: fixedSize * 0.29,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.main,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'ເຂົ້າສູ່ລະບົບ',
-                              style: TextStyle(
-                                fontSize: fixedSize * 0.017,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: fixedSize * 0.010),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Column(
                       children: [
-                        GestureDetector(
-                          onTap: () {
-                            context.push('/forgotPassword');
-                          },
-                          child: Text(
-                            'ລືມລະຫັດຜ່ານ ? ',
-                            style: TextStyle(
-                              fontSize: fixedSize * 0.014,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: fixedSize * 0.005),
-                        GestureDetector(
-                          onTap: () {
-                            context.push('/checkPhone');
-                          },
-                          child: Text(
-                            'ລົງທະບຽນ',
-                            style: TextStyle(
-                              fontSize: fixedSize * 0.014,
-                              fontWeight: FontWeight.w400,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: fixedSize * 0.010),
-
-                    GestureDetector(
-                      onTap: () {
-                        print(123);
-                        authController.biometricLogin();
-                      },
-                      child: Container(
-                        height: fixedSize * 0.045,
-                        width: fixedSize * 0.075,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.main,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: fixedSize * 0.001,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Icon(
-                                Icons.fingerprint,
-                                color: Colors.white,
-                                size: fixedSize * 0.032,
+                        SizedBox(height: 20.h),
+                        Container(
+                          height: 50.h,
+                          width: 330.w,
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6.r,
+                                offset: const Offset(0, 2),
                               ),
-                              Image.asset(
-                                AppImage.faceID,
-                                color: Colors.white,
-                                scale: fixedSize * 0.009,
+                            ],
+                          ),
+                          child: AppTextField(
+                            textInputType: TextInputType.phone,
+                            obs: false,
+                            controller: phoneControl,
+                            text: 'ເບີໂທ 020 xxxx xxxx',
+                            icon: const Icon(
+                              Icons.account_circle,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        Container(
+                          height: 50.h,
+                          width: 330.w,
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6.r,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: AppTextField(
+                            textInputType: TextInputType.multiline,
+                            obs: _isObscure,
+                            controller: pwControl,
+                            text: 'ລະຫັດ: ********',
+                            icon: const Icon(
+                              Icons.lock_reset,
+                              color: Colors.grey,
+                            ),
+                            icon1: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                              icon: Icon(
+                                _isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                        Consumer(
+                          builder: (context, ref, _) => GestureDetector(
+                            onTap: isLoading ? null : _login,
+
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 15.w),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+
+                                children: [
+                                  Container(
+                                    height: 50.h,
+                                    width: 230.w,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.color1,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(30.r),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 1.r,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'ເຂົ້າສູ່ລະບົບ',
+                                        style: TextStyle(
+                                          fontSize: 17.sp,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (authState.canUseBiometric &&
+                                      authState.isBiometricEnabled)
+                                    GestureDetector(
+                                      onTap: () {
+                                        _bioLogin();
+                                      },
+                                      child: Tooltip(
+                                        message:
+                                            'ເຂົ້າສູ່ລະບົບດ້ວຍລາຍນິ້ວມື ຫຼື Face ID',
+                                        child: Container(
+                                          height: 50.h,
+                                          width: 95.w,
+                                          decoration: BoxDecoration(
+                                            gradient: AppColors.main,
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(30.r),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black12,
+                                                blurRadius: 1.r,
+                                                offset: const Offset(0, 5),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.all(1.w),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(30.r),
+                                                ),
+                                              ),
+                                              child: Center(
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.fingerprint,
+                                                      color: AppColors.color1,
+                                                      size: 30.sp,
+                                                    ),
+                                                    SvgPicture.asset(
+                                                      SvgIcons.faceId,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ), // fingerprint UI
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // SizedBox(height: 10.h),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 30.w,
+                            vertical: 15.h,
+                          ),
+                          child: Row(
+                            // mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  context.pushNamed('forgotPassword');
+                                },
+                                child: Text(
+                                  'ລືມລະຫັດຜ່ານ ?   ',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 0.5.w),
+                              GestureDetector(
+                                onTap: () {
+                                  context.pushNamed('checkPhone');
+                                },
+                                child: Text(
+                                  'ລົງທະບຽນ',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w400,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(height: fixedSize * 0.01),
+
               Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Container(
-                        height: fixedSize * 0.035,
-                        width: fixedSize * 0.14,
+                        height: 45.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
                               offset: const Offset(0, 3),
-                              blurRadius: fixedSize * 0.002,
+                              blurRadius: 2.r,
                             ),
                           ],
                         ),
                         child: GestureDetector(
                           onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.006,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.logoF,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'RDB BANK',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'RDB BANK',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       Container(
-                        height: fixedSize * 0.035,
-                        width: fixedSize * 0.14,
+                        height: 45.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
@@ -309,42 +413,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: GestureDetector(
                           onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.006,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.iconW,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'www.nbb.com.la',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'www.nbb.com.la',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 15.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          context.pushNamed('calendar');
+                        },
                         child: Container(
-                          height: fixedSize * 0.035,
-                          width: fixedSize * 0.14,
+                          height: 45.h,
+                          width: 150.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
+                              Radius.circular(20.r),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -354,36 +463,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.009,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.calendar,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'calendar',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'calendar',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       GestureDetector(
                         onTap: () {},
                         child: Container(
-                          height: fixedSize * 0.035,
-                          width: fixedSize * 0.14,
+                          height: 45.h,
+                          width: 150.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
+                              Radius.circular(20.r),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -393,24 +505,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.009,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.other,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'ບໍລິການອື່ນໆ',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'ບໍລິການອື່ນໆ',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -419,24 +534,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(vertical: fixedSize * 0.01),
+                padding: EdgeInsets.symmetric(vertical: 20.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'ສອບຖາມຂໍ້ມູນເພີ່ມຕື່ມ?',
-                      style: TextStyle(fontSize: fixedSize * 0.012),
+                      style: TextStyle(fontSize: 12.sp),
                     ),
-                    SizedBox(width: fixedSize * 0.008),
+                    SizedBox(width: 9.w),
                     GestureDetector(
                       child: Container(
-                        height: fixedSize * 0.026,
-                        width: fixedSize * 0.065,
+                        height: 26.h,
+                        width: 65.w,
                         decoration: BoxDecoration(
                           color: Colors.amber,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.02),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(16.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
@@ -455,7 +568,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 decorationColor: Colors.white,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: fixedSize * 0.013,
+                                fontSize: 13.sp,
                               ),
                             ),
                           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
+import 'package:moblie_banking/widgets/appbar.dart';
 import 'package:moblie_banking/widgets/card_deposit.dart';
 
 class HomeLoan extends StatefulWidget {
@@ -18,44 +19,7 @@ class _HomeLoanState extends State<HomeLoan> {
     double fixedSize = size.width + size.height;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: AppColors.color1,
-        title: Text(
-          'ບັນຊີເງິນຝາກ',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: fixedSize * 0.016,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(
-              top: fixedSize * 0.0075,
-              right: fixedSize * 0.01,
-            ),
-            child: GestureDetector(
-              onTap: () async {
-                // Handle logout action
-              },
-              child: Column(
-                children: [
-                  Image.asset(AppImage.logout, scale: 1.2),
-                  Text(
-                    'ອອກລະບົບ',
-                    style: TextStyle(
-                      fontSize: fixedSize * 0.01,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: GradientAppBar(title: 'ກວດສອບການຊຳລະ'),
       body: SafeArea(
         child: Column(
           children: [
@@ -136,11 +100,11 @@ class _HomeLoanState extends State<HomeLoan> {
                         ),
                         Row(
                           children: [
-                            Image.asset(
-                              AppImage.kip,
-                              scale: fixedSize * 0.03,
-                              color: AppColors.color1,
-                            ),
+                            // Image.asset(
+                            //   AppImage.kip,
+                            //   scale: fixedSize * 0.03,
+                            //   color: AppColors.color1,
+                            // ),
                             SizedBox(width: fixedSize * 0.005),
                             Text(
                               '123133213',

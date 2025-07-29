@@ -1,11 +1,20 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider_plus/carousel_options.dart';
 import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
+import 'package:moblie_banking/features/account/logic/profile_state.dart';
 import 'package:moblie_banking/features/auth/logic/auth_provider.dart';
+import 'package:moblie_banking/features/home/logic/home_provider.dart';
+import 'package:moblie_banking/features/account/logic/profile_provider.dart';
+import 'package:moblie_banking/features/home/logic/slide_provider.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -18,7 +27,24 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> logout() async {
     await ref.read(authNotifierProvider.notifier).logout();
-    context.go('/login');
+    if (mounted) {
+      context.goNamed('login');
+    }
+  }
+
+  Future<void> generateQR() async {
+    await ref.read(homeNotifierProvider.notifier).generateQR();
+    if (mounted) {
+      context.pushNamed('accountQR');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(homeNotifierProvider.notifier).getAccountDPT();
+    });
   }
 
   @override
@@ -27,248 +53,207 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double fixedSize = size.width + size.height;
     final authstate = ref.watch(authNotifierProvider);
     final user = authstate.user;
+    final acDpt = ref.watch(homeNotifierProvider);
+    final profileState = ref.watch(profileNotifierProvider);
+    final slideAsync = ref.watch(slideProvider);
     return Scaffold(
-      // backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   // backgroundColor: Colors.black,
-      //   elevation: 0,
-      //   flexibleSpace: Container(
-      //     decoration: BoxDecoration(
-      //       gradient: AppColors.main, // เรียกใช้ gradient จาก constants
-      //     ),
-      //   ),
-      //   title: Text(
-      //     'RDB GROW',
-      //     style: TextStyle(
-      //       color: Colors.white,
-      //       fontSize: fixedSize * 0.016,
-      //       fontWeight: FontWeight.bold,
-      //     ),
-      //   ),
-      //   actions: [
-      //     Padding(
-      //       padding: EdgeInsets.only(
-      //         top: fixedSize * 0.0075,
-      //         right: fixedSize * 0.01,
-      //       ),
-      //       child: GestureDetector(
-      //         onTap: () async {
-      //           // Handle logout action
-      //         },
-      //         child: Column(
-      //           children: [
-      //             Image.asset(AppImage.logout, scale: 1.2),
-      //             Text(
-      //               'ອອກລະບົບ',
-      //               style: TextStyle(
-      //                 fontSize: fixedSize * 0.01,
-      //                 fontWeight: FontWeight.bold,
-      //                 color: Colors.white,
-      //               ),
-      //             ),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
       appBar: GradientAppBar(
         title: 'RDB GROW',
+        isLogout: true,
         onIconPressed: () {
           logout();
         },
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Container(
-              //   height: fixedSize * 0.045,
-              //   width: double.infinity,
-              //   color: AppColors.mainColor,
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       // GestureDetector(
-              //       //   onTap: () {
-              //       //     Get.back();
-              //       //   },
-              //       //   child: Padding(
-              //       //     padding: EdgeInsets.only(
-              //       //         left: Dimensions.width10,
-              //       //         right: Dimensions.width10),
-              //       //     child: Image.asset(
-              //       //       AppImage.back,
-              //       //       color: Colors.white,
-              //       //     ),
-              //       //   ),
-              //       // ),
-              //       SizedBox(width: fixedSize * 0.018 + fixedSize * 0.018),
-              //       Text(
-              //         'RDB GROW',
-              //         style: TextStyle(
-              //           color: Colors.white,
-              //           fontSize: fixedSize * 0.016,
-              //           fontWeight: FontWeight.bold,
-              //         ),
-              //       ),
-              //       Padding(
-              //         padding: EdgeInsets.only(
-              //           top: fixedSize * 0.0075,
-              //           right: fixedSize * 0.01,
-              //         ),
-              //         child: GestureDetector(
-              //           onTap: () async {},
-              //           child: Column(
-              //             children: [
-              //               Image.asset(AppImage.logout, scale: 1.2),
-              //               Text(
-              //                 'ອອກລະບົບ',
-              //                 style: TextStyle(
-              //                   fontSize: fixedSize * 0.01,
-              //                   fontWeight: FontWeight.bold,
-              //                   color: Colors.white,
-              //                 ),
-              //               ),
-              //             ],
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              Padding(
-                padding: EdgeInsets.all(fixedSize * 0.01),
-                child: SizedBox(
-                  height: fixedSize * 0.13,
-                  width: double.infinity,
-                  child: CarouselSlider.builder(
-                    itemCount: 5,
-                    itemBuilder: (context, index, realIndex) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(fixedSize * 0.01),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(fixedSize * 0.01),
+                  child: SizedBox(
+                    height: fixedSize * 0.13,
+                    width: double.infinity,
+                    child: slideAsync.when(
+                      loading: () => Center(child: CircularProgressIndicator()),
+
+                      error: (err, stack) => Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red),
+                            SizedBox(height: 8),
+                            Text(
+                              'ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດສະໄລດ໌',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              err.toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    options: CarouselOptions(
-                      autoPlay: true,
-                      aspectRatio: 2.0,
-                      enlargeCenterPage: true,
+                      ),
+                      data: (slides) => CarouselSlider.builder(
+                        itemCount: slides.length,
+                        itemBuilder: (context, index, realIndex) {
+                          final slide = slides[index];
+                          print('Slide image URL: ${slide.img}');
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              fixedSize * 0.01,
+                            ),
+                            child: CachedNetworkImage(
+                              imageUrl: 'https://web.nbb.com.la/${slide.img}',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.broken_image),
+                            ),
+                          );
+                        },
+                        options: CarouselOptions(
+                          autoPlay: true,
+                          aspectRatio: 2.0,
+                          enlargeCenterPage: true,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              Container(
-                height: fixedSize * 0.09,
-                width: double.infinity,
-                color: AppColors.bgColor2,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: fixedSize * 0.008,
-                    right: fixedSize * 0.001,
-                  ),
-                  child: user == null
-                      ? Text('ບໍ່ມີຂໍ້ມຼນ')
-                      : Row(
-                          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(right: fixedSize * 0.01),
-                              child: Image.asset(
-                                AppImage.photo,
-                                scale: MediaQuery.of(context).size.height / 750,
+                Container(
+                  height: fixedSize * 0.09,
+                  width: double.infinity,
+                  color: AppColors.bgColor2,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: fixedSize * 0.008,
+                      right: fixedSize * 0.001,
+                    ),
+                    child: user == null
+                        ? Text('ບໍ່ມີຂໍ້ມຼນ')
+                        : Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  right: fixedSize * 0.01,
+                                ),
+                                child: ClipOval(
+                                  child: _buildProfileImage(
+                                    user.profile,
+                                    fixedSize * 0.06,
+                                    profileState,
+                                  ),
+                                ),
                               ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'null',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: fixedSize * 0.013,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(height: fixedSize * 0.003),
-                                Text(
-                                  '${user.firstName} ${user.lastName}',
-                                  style: TextStyle(
-                                    fontSize: fixedSize * 0.012,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${user.phone}',
-                                      style: TextStyle(
-                                        fontSize: fixedSize * 0.012,
-                                        color: Colors.grey,
-                                      ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'null',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: fixedSize * 0.013,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                    SizedBox(width: fixedSize * 0.05),
-                                    GestureDetector(
-                                      onTap: () {
-                                        context.push('/account');
-                                      },
-                                      child: Container(
-                                        height: fixedSize * 0.025,
-                                        width: fixedSize * 0.07,
-                                        decoration: BoxDecoration(
-                                          gradient: AppColors.main,
-                                          borderRadius: BorderRadius.circular(
-                                            fixedSize * 0.01,
-                                          ),
-                                          // boxShadow: [
-                                          //   BoxShadow(
-                                          //     color: Colors.grey.shade400,
-                                          //     offset: const Offset(1, 2),
-                                          //     blurRadius: 3,
-                                          //   ),
-                                          // ],
+                                  ),
+                                  SizedBox(height: fixedSize * 0.003),
+                                  Text(
+                                    '${user.firstName} ${user.lastName}',
+                                    style: TextStyle(
+                                      fontSize: fixedSize * 0.012,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        user.phone,
+                                        style: TextStyle(
+                                          fontSize: fixedSize * 0.012,
+                                          color: Colors.grey,
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            'ເບິ່ງຂໍ້ມູນ',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: fixedSize * 0.012,
+                                      ),
+                                      SizedBox(width: fixedSize * 0.05),
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.pushNamed('account');
+                                        },
+                                        child: Container(
+                                          height: fixedSize * 0.02,
+                                          width: fixedSize * 0.04,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.color1,
+                                            borderRadius: BorderRadius.circular(
+                                              fixedSize * 0.01,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsetsGeometry.all(1),
+                                            child: Center(
+                                              child: Text(
+                                                'ແກ້ໄຂ',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: fixedSize * 0.010,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                      SizedBox(width: fixedSize * 0.003),
+                                      GestureDetector(
+                                        onTap: () {
+                                          context.pushNamed('addACDPT');
+                                        },
+                                        child: Container(
+                                          height: fixedSize * 0.02,
+                                          width: fixedSize * 0.05,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.color1,
+                                            borderRadius: BorderRadius.circular(
+                                              fixedSize * 0.01,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              'ເພີ່ມບັນຊີ',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: fixedSize * 0.010,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
-              ),
 
-              SizedBox(
-                height: fixedSize * 0.08,
-                width: double.infinity,
-                child: InkWell(
-                  onTap: () {
-                    // Navigate to deposit screen
-                    context.push('/deposit');
-                  },
+                SizedBox(
+                  height: fixedSize * 0.08,
+                  width: double.infinity,
                   child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Padding(
                         padding: EdgeInsets.only(
@@ -277,135 +262,395 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         child: Image.asset(
                           AppImage.mF,
-                          scale: fixedSize * 0.001,
+                          width: 80.w,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(right: fixedSize * 0.001),
-                        child: SizedBox(
-                          width: fixedSize * 0.16,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'ບັນຊີເງິນຝາກ',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.w500,
+                      GestureDetector(
+                        onTap: () {
+                          context.pushNamed(
+                            'webview',
+                            queryParameters: {'url': 'https://fund.nbb.com.la'},
+                          );
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: fixedSize * 0.001),
+                          child: SizedBox(
+                            width: fixedSize * 0.16,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: fixedSize * 0.013,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                '0201 1234 5678',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: fixedSize * 0.012,
+                                Text(
+                                  'ງານກອງທຶນ',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: fixedSize * 0.012,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'xaiyadeth poudthavong',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: fixedSize * 0.012,
+                                Text(
+                                  user == null
+                                      ? ""
+                                      : "${user.firstName}${user.lastName}",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: fixedSize * 0.012,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                      // SizedBox(
-                      //   width: Dimensions.width10,
-                      // ),
-                      Padding(
-                        padding: EdgeInsets.only(right: fixedSize * 0.001),
-                        child: Image.asset(
-                          AppImage.qr,
-                          scale: fixedSize * 0.0008,
+                      GestureDetector(
+                        onTap: () {
+                          generateQR();
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(right: fixedSize * 0.001),
+                          child: SvgPicture.asset(AppImage.qr, width: 45.w),
                         ),
                       ),
                     ],
                   ),
                 ),
+                acDpt.isLoading
+                    ? Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: fixedSize * 0.01),
+                              Text('ກຳລັງໂຫຼດຂໍ້ມູນບັນຊີ...'),
+                            ],
+                          ),
+                        ),
+                      )
+                    : acDpt.errorMessage != null
+                    ? Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 64,
+                                color: Colors.red,
+                              ),
+                              SizedBox(height: fixedSize * 0.01),
+                              Text(
+                                acDpt.errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              SizedBox(height: fixedSize * 0.01),
+                              ElevatedButton(
+                                onPressed: () {
+                                  ref
+                                      .read(homeNotifierProvider.notifier)
+                                      .clearError();
+                                  ref
+                                      .read(homeNotifierProvider.notifier)
+                                      .getAccountDPT();
+                                },
+                                child: Text('ລອງໃໝ່'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : acDpt.accountDpt.isEmpty
+                    ? Expanded(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.account_balance,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: fixedSize * 0.01),
+                              Text(
+                                'ບໍ່ມີບັນຊີ',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              SizedBox(height: fixedSize * 0.01),
+                              ElevatedButton(
+                                onPressed: () {
+                                  context.pushNamed('addACDPT');
+                                },
+                                child: Text('ເພີ່ມບັນຊີ'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Expanded(
+                        child: ListView.separated(
+                          separatorBuilder: (_, __) => const Divider(),
+                          itemCount: acDpt.accountDpt.length,
+                          itemBuilder: (context, index) {
+                            final account = acDpt.accountDpt[index];
+                            return SizedBox(
+                              height: fixedSize * 0.08,
+                              width: double.infinity,
+                              child: Row(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      left: fixedSize * 0.008,
+                                      right: fixedSize * 0.008,
+                                    ),
+                                    child: Image.asset(
+                                      AppImage.mF,
+                                      width: 80.w,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      context.pushNamed(
+                                        'homeDeposit',
+                                        pathParameters: {
+                                          'acno': account.linkValue,
+                                        },
+                                      );
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        right: fixedSize * 0.001,
+                                      ),
+                                      child: SizedBox(
+                                        width: fixedSize * 0.16,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              account.linkType == "DPT"
+                                                  ? 'ບັນຊີເງິນຝາກ'
+                                                  : '',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: fixedSize * 0.013,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              account.linkValue,
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: fixedSize * 0.012,
+                                              ),
+                                            ),
+                                            Text(
+                                              user == null
+                                                  ? ""
+                                                  : "${user.firstName}${user.lastName}",
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: fixedSize * 0.012,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      generateQR();
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        right: fixedSize * 0.001,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        AppImage.qr,
+                                        width: 45.w,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+              ],
+            ),
+            // ปุ่มสแกน QR ที่มุมขวาล่าง
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: EdgeInsets.all(fixedSize * 0.01),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed('scanQR');
+                      },
+                      child: Container(
+                        width: fixedSize * 0.05,
+                        height: fixedSize * 0.05,
+                        decoration: BoxDecoration(
+                          // color: Colors.amber,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: SvgPicture.asset(AppImage.scan, width: 45.w),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'ສະແກນ',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-
-              // Padding(
-              //   padding: EdgeInsets.symmetric(horizontal: fixedSize * 0.01),
-              //   child: const Divider(color: Colors.grey),
-              // ),
-
-              // SizedBox(
-              //   height: fixedSize * 0.08,
-              //   width: double.infinity,
-              //   child: InkWell(
-              //     onTap: () {
-              //       context.push('/loan');
-              //     },
-              //     child: Row(
-              //       // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //       children: [
-              //         Padding(
-              //           padding: EdgeInsets.only(
-              //             left: fixedSize * 0.008,
-              //             right: fixedSize * 0.008,
-              //           ),
-              //           child: Image.asset(
-              //             AppImage.mF,
-              //             scale: fixedSize * 0.001,
-              //           ),
-              //         ),
-              //         Padding(
-              //           padding: EdgeInsets.only(right: fixedSize * 0.001),
-              //           child: SizedBox(
-              //             width: fixedSize * 0.16,
-              //             child: Column(
-              //               crossAxisAlignment: CrossAxisAlignment.start,
-              //               mainAxisAlignment: MainAxisAlignment.center,
-              //               children: [
-              //                 Text(
-              //                   'ບັນຊີເງິນກູ້',
-              //                   style: TextStyle(
-              //                     color: Colors.black,
-              //                     fontSize: fixedSize * 0.013,
-              //                     fontWeight: FontWeight.w500,
-              //                   ),
-              //                 ),
-              //                 Text(
-              //                   '0201 1234 5678',
-              //                   style: TextStyle(
-              //                     color: Colors.grey,
-              //                     fontSize: fixedSize * 0.012,
-              //                   ),
-              //                 ),
-              //                 Text(
-              //                   'xaiyadeth poudthavong',
-              //                   style: TextStyle(
-              //                     color: Colors.grey,
-              //                     fontSize: fixedSize * 0.012,
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //         ),
-              //         // SizedBox(
-              //         //   width: Dimensions.width10,
-              //         // ),
-              //         Padding(
-              //           padding: EdgeInsets.only(right: fixedSize * 0.001),
-              //           child: Image.asset(
-              //             AppImage.qr,
-              //             scale: fixedSize * 0.0008,
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileImage(
+    String? profile,
+    double size,
+    ProfileState profileState,
+  ) {
+    // Show selected image if available (preview before upload)
+    if (profileState.selectedImage != null) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(size * 0.001),
+            child: SvgPicture.file(
+              profileState.selectedImage!,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Preview indicator
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.edit, size: 12, color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Show user's profile image if available and not hidden
+    if (profile != null && profile.isNotEmpty && !profileState.isImageHidden) {
+      if (profile.startsWith('http')) {
+        return CachedNetworkImage(
+          imageUrl: profile,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => SizedBox(
+            width: size,
+            height: size,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          errorWidget: (context, url, error) => Container(
+            width: size,
+            height: size,
+            color: Colors.grey[300],
+            child: Icon(Icons.person, color: Colors.grey, size: size * 0.7),
+          ),
+        );
+      } else if (profile.startsWith('data:image/')) {
+        // Decode base64
+        final base64Str = profile.split(',').last;
+        final bytes = base64Decode(base64Str);
+        return Image.memory(
+          bytes,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        );
+      } else {
+        // Assume it's a path to be appended to your API
+        return CachedNetworkImage(
+          imageUrl: 'https://fund.nbb.com.la/api/v1/$profile',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => SizedBox(
+            width: size,
+            height: size,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          errorWidget: (context, url, error) => Container(
+            width: size,
+            height: size,
+            color: Colors.grey[300],
+            child: Icon(Icons.person, color: Colors.grey, size: size * 0.7),
+          ),
+        );
+      }
+    }
+
+    // Show hidden indicator if image is hidden
+    if (profileState.isImageHidden && profile != null && profile.isNotEmpty) {
+      return Stack(
+        children: [
+          Container(
+            width: size,
+            height: size,
+            color: Colors.grey[300],
+            child: Icon(Icons.person, color: Colors.grey, size: size * 0.7),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.visibility_off, size: 12, color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Default icon (same as home screen)
+    return Container(
+      width: size,
+      height: size,
+      color: Colors.grey[300],
+      child: Icon(Icons.person, color: Colors.grey, size: size * 0.7),
     );
   }
 }

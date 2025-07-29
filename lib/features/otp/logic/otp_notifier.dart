@@ -54,8 +54,8 @@ class OtpNotifier extends StateNotifier<OtpState> {
 
     try {
       final id = await storage.getOtpId();
-      final response = await dioClient.client.post(
-        'v2/verify_otp',
+      final response = await dioClient.clientV2.post(
+        'verify_otp',
         data: {'otp_id': id, 'otp': code},
       );
       print(response);

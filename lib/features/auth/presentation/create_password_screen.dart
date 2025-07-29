@@ -19,8 +19,8 @@ bool _isObscure1 = true;
 bool _isObscure2 = true;
 
 class _CreatePasswordScreenState extends ConsumerState<CreatePasswordScreen> {
-  late final pw1Controller = TextEditingController();
-  late final pw2Controller = TextEditingController();
+  final pw1Controller = TextEditingController();
+  final pw2Controller = TextEditingController();
   @override
   void dispose() {
     pw1Controller.dispose();

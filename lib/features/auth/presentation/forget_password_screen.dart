@@ -39,10 +39,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     );
     await ref.read(authNotifierProvider.notifier).forgotPassword(phone);
     if (context.mounted) Navigator.of(context).pop();
-    final authstate = ref.watch(authNotifierProvider);
+    final authstate = ref.read(authNotifierProvider);
     if (authstate.successMessage == 'OTP sent successfully') {
       if (mounted) {
-        context.push('/otpforgot');
+        context.pushNamed('otpforgot');
       }
     }
   }

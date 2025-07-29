@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
-import 'package:moblie_banking/widgets/header.dart';
 import 'package:moblie_banking/widgets/service_buttom.dart';
 
 class ServiceScreen extends StatelessWidget {
@@ -10,11 +8,9 @@ class ServiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: GradientAppBar(title: 'ບໍລິການ'),
+      appBar: GradientAppBar(title: 'ບໍລິການ', isLogout: true),
       body: SafeArea(
         child: Column(
           children: [
