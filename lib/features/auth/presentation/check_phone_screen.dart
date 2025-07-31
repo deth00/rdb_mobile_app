@@ -15,7 +15,7 @@ class CheckPhoneScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckPhoneScreenState extends ConsumerState<CheckPhoneScreen> {
-  late final phoneControl = TextEditingController();
+  final phoneControl = TextEditingController();
   @override
   void dispose() {
     phoneControl.dispose();
@@ -38,10 +38,10 @@ class _CheckPhoneScreenState extends ConsumerState<CheckPhoneScreen> {
       );
       await ref.read(authNotifierProvider.notifier).cKPone(phone);
       if (context.mounted) Navigator.of(context).pop();
-      final authState = ref.watch(authNotifierProvider);
+      final authState = ref.read(authNotifierProvider);
       if (authState.successMessage == 'OTP sent successfully') {
         if (mounted) {
-          context.push('/otpregis');
+          context.pushNamed('otpregis');
         }
       } else {
         showCustomSnackBar(context, 'ເບິໂທບໍ່ຖຶກຕ້ອງ', isError: true);

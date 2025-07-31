@@ -1,5 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io' show Platform;
 
 class SecureStorage {
   static const _accessTokenKey = 'access_token';
@@ -8,6 +10,8 @@ class SecureStorage {
   static const _otpid = 'otp_id';
   static const _otpKey = 'otp_code';
   static const _phone = 'phone';
+  static const _userAgentKey = 'user_agent';
+  static const _name = 'username';
 
   final _auth = LocalAuthentication();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -30,6 +34,17 @@ class SecureStorage {
       return token != null;
     }
     return false;
+  }
+
+  Future<void> authenticateWithBiometric() async {
+    final auth = await _auth.authenticate(
+      localizedReason: 'ຢືນຢັນຕົວຕົນເພື່ອປ່ຽນການຕັ້ງຄ່າ',
+      options: const AuthenticationOptions(biometricOnly: true),
+    );
+
+    if (!auth) {
+      throw Exception('ການຢືນຢັນຕົວຕົນລົ້ມເຫລວ');
+    }
   }
 
   /// Save Access Token
@@ -103,5 +118,40 @@ class SecureStorage {
 
   Future<String?> getPhone() async {
     return await _storage.read(key: _phone);
+  }
+
+  Future<void> saveName(String nake) async {
+    await _storage.write(key: _name, value: nake);
+  }
+
+  Future<String?> getName() async {
+    return await _storage.read(key: _name);
+  }
+
+  Future<void> saveUserAgent(String userAgent) async {
+    await _storage.write(key: _userAgentKey, value: userAgent);
+  }
+
+  Future<String?> getUserAgent() async {
+    return await _storage.read(key: _userAgentKey);
+  }
+
+  /// Get detailed mobile device user agent using device_info_plus
+  Future<String> getMobileUserAgent() async {
+    final deviceInfo = DeviceInfoPlugin();
+
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        return 'moblie_banking/1.0.0 (Android ${androidInfo.version.release}; ${androidInfo.model})';
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        return 'moblie_banking/1.0.0 (iOS ${iosInfo.systemVersion}; ${iosInfo.model})';
+      } else {
+        return 'moblie_banking/1.0.0 (Unknown Platform)';
+      }
+    } catch (e) {
+      return 'moblie_banking/1.0.0 (Unknown Device)';
+    }
   }
 }

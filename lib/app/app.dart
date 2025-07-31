@@ -8,11 +8,24 @@ class App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(goRouterProvider);
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.main,
-      routerConfig: router,
-    );
+    try {
+      final router = ref.watch(goRouterProvider);
+      return MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.main,
+        routerConfig: router,
+        builder: (context, child) {
+          return child ??
+              const Scaffold(body: Center(child: CircularProgressIndicator()));
+        },
+      );
+    } catch (e) {
+      // Fallback if router fails to initialize
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.main,
+        home: const Scaffold(body: Center(child: Text('Initializing...'))),
+      );
+    }
   }
 }

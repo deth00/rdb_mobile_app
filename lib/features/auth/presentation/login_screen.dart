@@ -1,10 +1,17 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider_plus/carousel_options.dart';
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/core/utils/snackbar_helper.dart';
+import 'package:moblie_banking/core/utils/svg_icons.dart';
 import 'package:moblie_banking/features/auth/logic/auth_provider.dart';
+import 'package:moblie_banking/features/home/logic/slide_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -16,8 +23,23 @@ class LoginScreen extends ConsumerStatefulWidget {
 bool _isObscure = true;
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late final phoneControl = TextEditingController();
-  late final pwControl = TextEditingController();
+  final phoneControl = TextEditingController();
+  final pwControl = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      ref.read(authNotifierProvider.notifier).load();
+      // Load saved phone number and display it
+      // final savedPhone = await ref.read(secureStorageProvider).getPhone();
+      // if (savedPhone != null && savedPhone.isNotEmpty) {
+      //   setState(() {
+      //     phoneControl.text = savedPhone;
+      //   });
+      // }
+    });
+  }
+
   @override
   void dispose() {
     phoneControl.dispose();
@@ -48,16 +70,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     await ref.read(authNotifierProvider.notifier).login(phone, password);
     if (context.mounted) Navigator.of(context).pop();
-    final authState = ref.watch(authNotifierProvider);
+    final authState = ref.read(authNotifierProvider);
 
     if (authState.isLoggedIn) {
       if (mounted) {
-        context.go('/home');
+        context.goNamed('home');
       }
     } else {
       showCustomSnackBar(context, 'ເບີໂທ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກ', isError: true);
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -65,34 +89,109 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     double fixedSize = size.width + size.height;
     final isLoading = ref.watch(authNotifierProvider).isLoading;
     final authController = ref.read(authNotifierProvider.notifier);
+    final authState = ref.watch(authNotifierProvider);
+    final slideAsync = ref.watch(slideProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: fixedSize * 0.035),
-              Center(child: Image.asset(AppImage.logoRDB, scale: 1.2)),
+              SizedBox(height: 30.h),
+              Center(child: Image.asset(AppImage.lordb, height: 160.h)),
+              // Center(child: SvgPicture.asset(SvgIcons.logoApp, height: 160.h)),
+              Text(
+                'Pay smart, Live easy',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.color1,
+                ),
+              ),
+              Text(
+                'ເພື່ອຊິວິດທີ່ງ່າຍຂຶ້ນ',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w200,
+                  color: AppColors.color1,
+                ),
+              ),
+              // Padding(
+              //   padding: EdgeInsets.only(left: 10.w, right: 10.w, bottom: 10.h),
+              //   child: SizedBox(
+              //     height: fixedSize * 0.13,
+              //     width: double.infinity,
+              //     child: slideAsync.when(
+              //       loading: () => Center(child: CircularProgressIndicator()),
+
+              //       error: (err, stack) => Center(
+              //         child: Column(
+              //           mainAxisAlignment: MainAxisAlignment.center,
+              //           children: [
+              //             Icon(Icons.error_outline, color: Colors.red),
+              //             SizedBox(height: 8),
+              //             Text(
+              //               'ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດສະໄລດ໌',
+              //               style: TextStyle(color: Colors.red),
+              //             ),
+              //             SizedBox(height: 8),
+              //             Text(
+              //               err.toString(),
+              //               style: TextStyle(fontSize: 12, color: Colors.grey),
+              //               textAlign: TextAlign.center,
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //       data: (slides) => CarouselSlider.builder(
+              //         itemCount: slides.length,
+              //         itemBuilder: (context, index, realIndex) {
+              //           final slide = slides[index];
+              //           return ClipRRect(
+              //             borderRadius: BorderRadius.circular(fixedSize * 0.01),
+              //             child: CachedNetworkImage(
+              //               imageUrl: 'https://web.nbb.com.la/${slide.img}',
+              //               fit: BoxFit.cover,
+              //               width: double.infinity,
+              //               placeholder: (context, url) =>
+              //                   Center(child: CircularProgressIndicator()),
+              //               errorWidget: (context, url, error) =>
+              //                   Icon(Icons.broken_image),
+              //             ),
+              //           );
+              //         },
+              //         options: CarouselOptions(
+              //           autoPlay: true,
+              //           aspectRatio: 2.0,
+              //           enlargeCenterPage: true,
+              //         ),
+              //       ),
+              //     ),
+              //   ),
+              // ),
               Container(
-                height: fixedSize * 0.29,
+                height: 245.h,
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(AppImage.bglogin),
-                    fit: BoxFit.contain,
-                  ),
+                  // color: Colors.amber,
+                  // image: DecorationImage(
+                  //   image: AssetImage(AppImage.bglogin),
+                  //   scale: 1.2,
+                  //   fit: BoxFit.cover,
+                  // ),
                 ),
                 child: Column(
                   children: [
-                    SizedBox(height: fixedSize * 0.02),
+                    SizedBox(height: 5.h),
                     Container(
-                      height: fixedSize * 0.045,
-                      width: fixedSize * 0.29,
+                      padding: EdgeInsets.all(3),
                       decoration: BoxDecoration(
+                        gradient: AppColors.main,
+                        borderRadius: BorderRadius.all(Radius.circular(40)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: fixedSize * 0.0045,
-                            offset: const Offset(0, 2),
+                            blurRadius: 3,
+                            color: Colors.grey.shade400,
+                            offset: Offset(0, 5),
                           ),
                         ],
                       ),
@@ -107,16 +206,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: fixedSize * 0.02),
+                    SizedBox(height: 20.h),
                     Container(
-                      height: fixedSize * 0.045,
-                      width: fixedSize * 0.29,
+                      padding: EdgeInsets.all(3),
                       decoration: BoxDecoration(
+                        gradient: AppColors.main,
+                        borderRadius: BorderRadius.all(Radius.circular(40)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: fixedSize * 0.0045,
-                            offset: const Offset(0, 2),
+                            blurRadius: 3,
+                            color: Colors.grey.shade400,
+                            offset: Offset(0, 5),
                           ),
                         ],
                       ),
@@ -141,164 +241,195 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: fixedSize * 0.02),
+                    SizedBox(height: 20.h),
                     Consumer(
                       builder: (context, ref, _) => GestureDetector(
                         onTap: isLoading ? null : _login,
-
-                        child: Container(
-                          height: fixedSize * 0.045,
-                          width: fixedSize * 0.29,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.main,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'ເຂົ້າສູ່ລະບົບ',
-                              style: TextStyle(
-                                fontSize: fixedSize * 0.017,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: fixedSize * 0.010),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            context.push('/forgotPassword');
-                          },
-                          child: Text(
-                            'ລືມລະຫັດຜ່ານ ? ',
-                            style: TextStyle(
-                              fontSize: fixedSize * 0.014,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: fixedSize * 0.005),
-                        GestureDetector(
-                          onTap: () {
-                            context.push('/checkPhone');
-                          },
-                          child: Text(
-                            'ລົງທະບຽນ',
-                            style: TextStyle(
-                              fontSize: fixedSize * 0.014,
-                              fontWeight: FontWeight.w400,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: fixedSize * 0.010),
-
-                    GestureDetector(
-                      onTap: () {
-                        print(123);
-                        authController.biometricLogin();
-                      },
-                      child: Container(
-                        height: fixedSize * 0.045,
-                        width: fixedSize * 0.075,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.main,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: fixedSize * 0.001,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 15.w),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Icon(
-                                Icons.fingerprint,
-                                color: Colors.white,
-                                size: fixedSize * 0.032,
+                              Container(
+                                height: 50.h,
+                                width: 230.w,
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.main,
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(30.r),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 1.r,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'ເຂົ້າສູ່ລະບົບ',
+                                    style: TextStyle(
+                                      fontSize: 17.sp,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              Image.asset(
-                                AppImage.faceID,
-                                color: Colors.white,
-                                scale: fixedSize * 0.009,
-                              ),
+                              
                             ],
                           ),
                         ),
                       ),
                     ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                        left: 30.w,
+                        right: 30.w,
+                        top: 10.h,
+                      ),
+                      child: Row(
+                        // mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              context.pushNamed('forgotPassword');
+                            },
+                            child: Text(
+                              'ລືມລະຫັດຜ່ານ ?   ',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 0.5.w),
+                          GestureDetector(
+                            onTap: () {
+                              context.pushNamed('checkPhone');
+                            },
+                            child: Text(
+                              'ລົງທະບຽນ',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              SizedBox(height: fixedSize * 0.01),
+              Padding(
+                padding: EdgeInsets.only(left: 10.w, right: 10.w, bottom: 10.h),
+                child: SizedBox(
+                  height: fixedSize * 0.13,
+                  width: double.infinity,
+                  child: slideAsync.when(
+                    loading: () => Center(child: CircularProgressIndicator()),
+
+                    error: (err, stack) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red),
+                          SizedBox(height: 8),
+                          Text(
+                            'ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດສະໄລດ໌',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            err.toString(),
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    data: (slides) => CarouselSlider.builder(
+                      itemCount: slides.length,
+                      itemBuilder: (context, index, realIndex) {
+                        final slide = slides[index];
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                          child: CachedNetworkImage(
+                            imageUrl: 'https://web.nbb.com.la/${slide.img}',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            placeholder: (context, url) =>
+                                Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.broken_image),
+                          ),
+                        );
+                      },
+                      options: CarouselOptions(
+                        autoPlay: true,
+                        aspectRatio: 2.0,
+                        enlargeCenterPage: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Container(
-                        height: fixedSize * 0.035,
-                        width: fixedSize * 0.14,
+                        height: 45.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
                               offset: const Offset(0, 3),
-                              blurRadius: fixedSize * 0.002,
+                              blurRadius: 2.r,
                             ),
                           ],
                         ),
                         child: GestureDetector(
                           onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.006,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.logoF,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'RDB BANK',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'RDB BANK',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       Container(
-                        height: fixedSize * 0.035,
-                        width: fixedSize * 0.14,
+                        height: 45.h,
+                        width: 150.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.016),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
@@ -309,42 +440,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: GestureDetector(
                           onTap: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.006,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.iconW,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'www.nbb.com.la',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'www.nbb.com.la',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 15.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          context.pushNamed('calendar');
+                        },
                         child: Container(
-                          height: fixedSize * 0.035,
-                          width: fixedSize * 0.14,
+                          height: 45.h,
+                          width: 150.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
+                              Radius.circular(20.r),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -354,36 +490,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.009,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.calendar,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'calendar',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'calendar',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       GestureDetector(
                         onTap: () {},
                         child: Container(
-                          height: fixedSize * 0.035,
-                          width: fixedSize * 0.14,
+                          height: 45.h,
+                          width: 150.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(fixedSize * 0.016),
+                              Radius.circular(20.r),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -393,24 +532,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: fixedSize * 0.009,
-                                  right: fixedSize * 0.005,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 13.w),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SvgPicture.asset(
+                                  SvgIcons.other,
+                                  height: 20.h,
+                                  width: 20.w,
                                 ),
-                              ),
-                              Text(
-                                'ບໍລິການອື່ນໆ',
-                                style: TextStyle(
-                                  fontSize: fixedSize * 0.013,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                SizedBox(width: 5.w),
+                                Text(
+                                  'ບໍລິການອື່ນໆ',
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -419,24 +561,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.symmetric(vertical: fixedSize * 0.01),
+                padding: EdgeInsets.symmetric(vertical: 20.h),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'ສອບຖາມຂໍ້ມູນເພີ່ມຕື່ມ?',
-                      style: TextStyle(fontSize: fixedSize * 0.012),
+                      style: TextStyle(fontSize: 14.sp),
                     ),
-                    SizedBox(width: fixedSize * 0.008),
+                    SizedBox(width: 9.w),
                     GestureDetector(
                       child: Container(
-                        height: fixedSize * 0.026,
-                        width: fixedSize * 0.065,
+                        height: 26.h,
+                        width: 65.w,
                         decoration: BoxDecoration(
                           color: Colors.amber,
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(fixedSize * 0.02),
-                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(16.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
@@ -455,7 +595,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 decorationColor: Colors.white,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: fixedSize * 0.013,
+                                fontSize: 13.sp,
                               ),
                             ),
                           ],
@@ -495,16 +635,10 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      height: 55,
-      width: 360,
+      height: 45,
+      width: 320,
       decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 15,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        borderRadius: BorderRadius.all(Radius.circular(screenWidth * 0.1)),
       ),
       child: TextField(
         keyboardType: textInputType,
@@ -514,7 +648,7 @@ class AppTextField extends StatelessWidget {
         decoration: InputDecoration(
           prefixIcon: icon,
           suffixIcon: icon1,
-          fillColor: Colors.grey.shade100,
+          fillColor: Colors.white,
           filled: true,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(screenWidth * 0.1),
@@ -533,4 +667,5 @@ class AppTextField extends StatelessWidget {
       ),
     );
   }
+
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
+import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/widgets/nav_item.dart' show NavigatorItem;
 import 'package:moblie_banking/provider/nav_provider.dart';
+import 'package:moblie_banking/features/notification/logic/notification_provider.dart';
 
 class NavBar extends ConsumerWidget {
   final Widget child;
@@ -26,6 +28,7 @@ class NavBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navIndexProvider);
+    final notificationState = ref.watch(notificationNotifierProvider);
     Size size = MediaQuery.of(context).size;
     double fixedSize = size.width + size.height;
     return Scaffold(
@@ -45,8 +48,8 @@ class NavBar extends ConsumerWidget {
               NavigatorItem(
                 index: 1,
                 title: 'ແຈ້ງເຕືອນ',
-                alert: false,
-                icons: Icons.notifications_active_rounded,
+                alert: true,
+                image: AppImage.mnoti,
               ),
               NavigatorItem(
                 index: 2,
@@ -57,8 +60,9 @@ class NavBar extends ConsumerWidget {
               NavigatorItem(
                 index: 3,
                 title: 'ບໍລິການ',
-                alert: false,
-                icons: Icons.grid_view_outlined,
+                alert: true,
+                // icons: Icons.grid_view_outlined,
+                image: AppImage.other,
               ),
             ],
           ),

@@ -48,5 +48,8 @@
 	<!-- Biometric authentication permissions -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>This app uses Face ID to securely authenticate you for banking transactions.</string>
+	<!-- Camera permission for QR scanning -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses camera to scan QR codes for banking transactions.</string>
 </dict>
 </plist>

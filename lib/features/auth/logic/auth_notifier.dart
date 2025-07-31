@@ -14,9 +14,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login(String phone, String password) async {
     state = state.copyWith(isLoading: true);
     try {
+      // Get mobile user agent using device_info_plus
+      final userAgent = await storage.getMobileUserAgent();
+
       final response = await dioClient.client.post(
         'v1/login',
-        data: {'phone': phone, 'password': password},
+        data: {'phone': phone, 'password': password, 'userAgent': userAgent},
       );
       final code = response.statusCode ?? 0;
       if (code == 200) {
@@ -26,7 +29,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
         await storage.saveAccessToken(accessToken);
         await storage.saveRefreshToken(refreshToken);
+        await storage.saveName(user.firstName);
+        // Save phone number for biometric authentication
+        await storage.savePhone(phone);
+        // Save userAgent for refresh token requests
+        await storage.saveUserAgent(userAgent);
+
         state = AuthState(isLoading: false, isLoggedIn: true, user: user);
+        print('refreshToken === ${await storage.getRefreshToken()}');
       }
     } on DioError catch (e) {
       state = state.copyWith(isLoading: false);
@@ -40,8 +50,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> cKPone(String phone) async {
     // state = state.copyWith(isLoading: true);
     try {
-      final response = await dioClient.client.post(
-        'v2/register',
+      final response = await dioClient.clientV2.post(
+        'register',
         data: {"phone": phone},
       );
       final code = response.statusCode ?? 0;
@@ -64,8 +74,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final otpID = await storage.getOtpId();
       final otpcode = await storage.getOTP();
-      final response = await dioClient.client.post(
-        'v2/insert_user',
+      final response = await dioClient.clientV2.post(
+        'insert_user',
         data: {
           "otp_id": otpID,
           "otp": otpcode,
@@ -88,8 +98,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> forgotPassword(String phone) async {
     // state = state.copyWith(isLoading: true);
     try {
-      final response = await dioClient.client.post(
-        'v2/forgot_password',
+      final response = await dioClient.clientV2.post(
+        'forgot_password',
         data: {"phone": phone},
       );
       final code = response.statusCode ?? 0;
@@ -112,8 +122,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final otpID = await storage.getOtpId();
       final otpcode = await storage.getOTP();
       final phone = await storage.getPhone();
-      final response = await dioClient.client.post(
-        'v2/create_password',
+      final response = await dioClient.clientV2.post(
+        'create_password',
         data: {
           "otp_id": otpID,
           "otp": otpcode,
@@ -155,10 +165,73 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> biometricLogin() async {
     try {
-      await storage.loginWithBiometric();
-      state = state.copyWith(successMessage: 'success');
+      final isAuthenticated = await storage.loginWithBiometric();
+      if (!isAuthenticated) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'ການຢືນຢັນດ້ວຍ Biometric ລົ້ມເຫລວ',
+        );
+        return;
+      }
+      final refreshToken = await storage.getRefreshToken();
+      if (refreshToken == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'ບໍ່ພົບ refresh token ກະລຸນາ login ດ້ວຍລະຫັດກ່ອນ',
+        );
+        return;
+      }
+      final userAgent = await storage.getUserAgent();
+      final response = await dioClient.client.post(
+        'v1/refreshToken',
+        data: {
+          "userAgent": userAgent ?? "moblie_banking",
+          "refreshToken": refreshToken,
+        },
+      );
+      if (response.data['accessToken'] == null ||
+          response.data['userData'] == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Backend did not return valid session',
+        );
+        return;
+      }
+
+      final accessToken = response.data['accessToken'];
+      final newRefreshToken = response.data['refreshToken'];
+      final user = User.fromJson(response.data['userData'][0]);
+      await storage.saveAccessToken(accessToken);
+      await storage.saveRefreshToken(newRefreshToken);
+      state = AuthState(isLoading: false, isLoggedIn: true, user: user);
     } catch (e) {
-      state = state.copyWith(errorMessage: '${e}');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Biometric login failed: $e',
+      );
+    }
+  }
+
+  Future<void> authenticateWithBiometric() async {
+    try {
+      await storage.authenticateWithBiometric();
+      // Authentication successful, no need to update state for settings
+    } catch (e) {
+      // Re-throw the error so the calling code can handle it
+      throw e;
+    }
+  }
+
+  Future<void> load() async {
+    try {
+      final isBiometricEnabled = await storage.isBiometricEnabled();
+      final canUseBiometric = await storage.canUseBiometric();
+      state = state.copyWith(
+        canUseBiometric: canUseBiometric,
+        isBiometricEnabled: isBiometricEnabled,
+      );
+    } catch (e) {
+      state = state.copyWith(canUseBiometric: false, isBiometricEnabled: false);
     }
   }
 
@@ -169,15 +242,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> toggle(bool value) async {
     await storage.setBiometricEnabled(value);
-    state = state.copyWith(successMessage: value.toString());
+    state = state.copyWith(
+      isBiometricEnabled: value,
+      successMessage: value.toString(),
+    );
   }
 
   Future<void> logout() async {
-    await storage.clearAll();
+    // await storage.clearAll();
     state = AuthState(); // กลับไปยังสถานะเริ่มต้น
   }
 
- 
   void setLoginFromToken(User user) {
     state = AuthState(isLoading: false, isLoggedIn: true, user: user);
   }

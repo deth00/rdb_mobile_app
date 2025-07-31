@@ -14,8 +14,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
-  late final phoneControl = TextEditingController();
-  late final pwControl = TextEditingController();
+  final phoneControl = TextEditingController();
+  final pwControl = TextEditingController();
   @override
   void dispose() {
     phoneControl.dispose();
@@ -43,10 +43,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
     await ref.read(authNotifierProvider.notifier).register(phone, password);
     if (context.mounted) Navigator.of(context).pop();
-    final authstate = ref.watch(authNotifierProvider);
+    final authstate = ref.read(authNotifierProvider);
     if (authstate.successMessage == 'successfully') {
       if (mounted) {
-        context.go("/login");
+        context.goNamed("login");
       }
     } else {
       // ignore: use_build_context_synchronously

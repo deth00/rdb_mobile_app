@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 
 class ServiceButtom extends StatelessWidget {
@@ -54,7 +55,11 @@ class ServiceButtom extends StatelessWidget {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(right: fixedSize * 0.01),
-                      child: Image.asset(image, scale: fixedSize * 0.001),
+                      child: SvgPicture.asset(
+                        image,
+                        width: fixedSize * 0.04,
+                        height: fixedSize * 0.04,
+                      ),
                     ),
                     Expanded(
                       child: Column(
