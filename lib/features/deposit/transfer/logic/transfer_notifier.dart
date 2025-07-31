@@ -35,10 +35,11 @@ class TransferNotifier extends StateNotifier<TransferState> {
 
     try {
       final response = await dioClient.client.get('v1/user_limit');
-
+      print("ddddddddddddddddddddddddddddddddddd${123456}");
       if (response.statusCode == 200) {
         final userLimit = UserLimit.fromJson(response.data);
         state = state.copyWith(isLoading: false, userLimit: userLimit);
+        print(state.userLimit);
       } else {
         state = state.copyWith(
           isLoading: false,
@@ -55,14 +56,12 @@ class TransferNotifier extends StateNotifier<TransferState> {
 
   Future<void> getAccountDetail(String accountNumber) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
-    print('accountNumber =================== : $accountNumber');
     try {
       // First, try to get account information from fund account API
       final response = await dioClient.client.get(
         'v1/act/get_fund_account_core/',
         queryParameters: {'acno': accountNumber},
       );
-
       if (response.statusCode == 200) {
         final fundAccountResponse = FundAccountResponse.fromJson(response.data);
 
@@ -77,20 +76,24 @@ class TransferNotifier extends StateNotifier<TransferState> {
             bankName: _defaultBankName,
             accountType: accountData.catname,
           );
-
           state = state.copyWith(
             isLoading: false,
             receiverAccount: receiverAccount,
-            errorMessage: null,
+            status: true,
           );
         } else {
-          // If not found in fund account, try to get from linkage
-          await _getAccountFromLinkage(accountNumber);
+          state = state.copyWith(
+            isLoading: false,
+            receiverAccount: null,
+            errorMessage: 'ບໍ່ພົບເລກບັນຊີນີ້',
+            status: false,
+          );
         }
       } else {
         state = state.copyWith(
           isLoading: false,
           errorMessage: 'ບໍ່ພົບເລກບັນຊີນີ້ (Status: ${response.statusCode})',
+          status: false,
         );
       }
     } on DioException catch (e) {

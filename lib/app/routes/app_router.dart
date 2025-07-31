@@ -6,7 +6,9 @@ import 'package:moblie_banking/features/account/presentation/account_screen.dart
 import 'package:moblie_banking/features/auth/presentation/check_phone_screen.dart';
 import 'package:moblie_banking/features/auth/presentation/create_password_screen.dart';
 import 'package:moblie_banking/features/auth/presentation/forget_password_screen.dart';
+import 'package:moblie_banking/features/auth/presentation/logged_in_login_screen.dart';
 import 'package:moblie_banking/features/auth/presentation/login_screen.dart';
+import 'package:moblie_banking/features/deposit/financial/presentation/finan_home.dart';
 import 'package:moblie_banking/features/deposit/transaction/presentation/transaction_screen.dart';
 import 'package:moblie_banking/features/otp/presentation/otp_forgot_pw.dart';
 import 'package:moblie_banking/features/auth/presentation/register_screen.dart';
@@ -29,6 +31,9 @@ import 'package:moblie_banking/features/splash/splash_screen.dart';
 import 'package:moblie_banking/features/calendar/presentation/calendar_screen.dart';
 import 'package:moblie_banking/features/notification/presentation/notification_screen.dart';
 import 'package:moblie_banking/features/webview/presentation/webview_screen.dart';
+import 'package:moblie_banking/features/location/presentation/location_screen.dart';
+import 'package:moblie_banking/features/location/presentation/map_screen.dart';
+import 'package:moblie_banking/features/settings/presentation/check_device_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   // final authRedirect = ref.watch(authRedirectProvider);
@@ -56,9 +61,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: '/loginNever',
+        name: 'loginNever',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const LoggedInLoginScreen(),
       ),
       GoRoute(
         path: '/register',
@@ -140,6 +150,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/check',
         name: 'check',
         builder: (context, state) => const CheckPaymentScreen(),
+        
       ),
       GoRoute(
         path: '/calendar',
@@ -154,6 +165,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final title = state.uri.queryParameters['title'] ?? 'ເວັບໄຊທ໌';
           return WebViewScreen(url: url, title: title);
         },
+      ),
+      GoRoute(
+        path: '/check-devices',
+        name: 'checkDevices',
+        builder: (context, state) => const CheckDevicePage(),
+      ),
+      GoRoute(
+        path: '/financial',
+        name: 'financial',
+        builder: (context, state) => const FinancialPage(),
       ),
 
       ShellRoute(
@@ -201,6 +222,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: '/notifications',
             name: 'notifications',
             builder: (context, state) => const NotificationScreen(),
+          ),
+          GoRoute(
+            path: '/location',
+            name: 'location',
+            builder: (context, state) => const LocationScreen(),
+          ),
+          GoRoute(
+            path: '/location/map',
+            name: 'locationMap',
+            builder: (context, state) => const MapScreen(),
           ),
         ],
       ),

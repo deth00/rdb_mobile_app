@@ -45,7 +45,11 @@ class HomeNotifier extends StateNotifier<HomeState> {
   }
 
   Future<void> generateQR() async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: null,
+      errorMessageQR: null,
+    );
 
     try {
       final response = await dioClient.clientV2.post(
@@ -59,23 +63,23 @@ class HomeNotifier extends StateNotifier<HomeState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'ເກີດຂໍ້ຜິດພາດໃນການສ້າງ QR Code',
+          errorMessageQR: 'ເກີດຂໍ້ຜິດພາດໃນການສ້າງ QR Code',
         );
       }
     } on DioError catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}',
+        errorMessageQR: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}',
       );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'ເກີດຂໍ້ຜິດພາດ: $e',
+        errorMessageQR: 'ເກີດຂໍ້ຜິດພາດ: $e',
       );
     }
   }
 
   void clearError() {
-    state = state.copyWith(errorMessage: null);
+    state = state.copyWith(errorMessage: null, errorMessageQR: null);
   }
 }

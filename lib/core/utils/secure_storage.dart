@@ -11,6 +11,7 @@ class SecureStorage {
   static const _otpKey = 'otp_code';
   static const _phone = 'phone';
   static const _userAgentKey = 'user_agent';
+  static const _name = 'username';
 
   final _auth = LocalAuthentication();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -117,6 +118,14 @@ class SecureStorage {
 
   Future<String?> getPhone() async {
     return await _storage.read(key: _phone);
+  }
+
+  Future<void> saveName(String nake) async {
+    await _storage.write(key: _name, value: nake);
+  }
+
+  Future<String?> getName() async {
+    return await _storage.read(key: _name);
   }
 
   Future<void> saveUserAgent(String userAgent) async {

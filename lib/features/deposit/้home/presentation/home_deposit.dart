@@ -177,7 +177,7 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                         cardDeposit(
                           text: 'ສິນເຊື່ອ',
                           image: AppImage.sin,
-                          routeName: 'commingsoon',
+                          routeName: 'financial',
                         ),
                         cardDeposit(
                           text: 'ເຕີມເງິນໂທລະສັບ',

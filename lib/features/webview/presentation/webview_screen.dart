@@ -102,7 +102,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: GradientAppBar(
-        title: widget.title,
+        title: '',
         actions: [
           if (_isLoading)
             Padding(

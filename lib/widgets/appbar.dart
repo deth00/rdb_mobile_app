@@ -33,6 +33,12 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: centerTitle,
+      leading: onIconPressed == null
+          ? null
+          : IconButton(
+              onPressed: onIconPressed,
+              icon: Icon(icon, color: Colors.white),
+            ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

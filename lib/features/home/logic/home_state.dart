@@ -5,12 +5,14 @@ class HomeState {
   final String? errorMessage;
   final List<AccountLinkage> accountDpt;
   final String? qrCode;
+  final String? errorMessageQR;
 
   HomeState({
     this.isLoading = false,
     this.errorMessage,
     this.accountDpt = const [],
     this.qrCode,
+    this.errorMessageQR,
   });
 
   HomeState copyWith({
@@ -18,10 +20,12 @@ class HomeState {
     String? errorMessage,
     List<AccountLinkage>? accountDpt,
     String? qrCode,
+    String? errorMessageQR,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
+      errorMessageQR: errorMessageQR ?? this.errorMessageQR,
       accountDpt: accountDpt ?? this.accountDpt,
       qrCode: qrCode ?? this.qrCode,
     );

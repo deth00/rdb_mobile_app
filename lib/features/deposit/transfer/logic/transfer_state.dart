@@ -3,6 +3,7 @@ import 'package:moblie_banking/core/models/user_limit_model.dart';
 
 class TransferState {
   final bool isLoading;
+  final bool? status;
   final String? errorMessage;
   final ReceiverAccount? receiverAccount;
   final bool isTransferSuccess;
@@ -11,6 +12,7 @@ class TransferState {
   final String? successMessage;
 
   TransferState({
+    this.status = false,
     this.isLoading = false,
     this.errorMessage,
     this.receiverAccount,
@@ -21,6 +23,7 @@ class TransferState {
   });
 
   TransferState copyWith({
+    bool? status,
     bool? isLoading,
     String? errorMessage,
     ReceiverAccount? receiverAccount,
@@ -30,6 +33,7 @@ class TransferState {
     String? successMessage,
   }) {
     return TransferState(
+      status: status ?? this.status,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
       receiverAccount: receiverAccount ?? this.receiverAccount,

@@ -38,7 +38,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       final isLoggedIn = await SplashController.isLoggedIn();
       final useBiometric = await SplashController.isUseBiometric();
-
       if (!mounted) return;
 
       if (isLoggedIn && useBiometric) {
@@ -57,8 +56,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       }
 
-      if (mounted) {
-        context.goNamed('login');
+      if (isLoggedIn) {
+        if (mounted) {
+          context.goNamed('login');
+        }
+      } else {
+        if (mounted) {
+          context.goNamed('loginNever');
+        }
       }
     } catch (e) {
       // If there's an error, go to login as fallback

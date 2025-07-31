@@ -27,10 +27,9 @@ class _TransferMoneyState extends ConsumerState<TransferMoney> {
 
     await ref.read(transferNotifierProvider.notifier).getAccountDetail(acno);
     final state = ref.read(transferNotifierProvider);
-
-    if (state.errorMessage != null) {
-      showCustomSnackBar(context, state.errorMessage!, isError: true);
-    } else if (state.receiverAccount != null) {
+    if (state.status == false) {
+      showCustomSnackBar(context, 'ບໍ່ພົບຂໍ້ມູນ', isError: true);
+    } else {
       if (mounted) {
         context.pushNamed(
           'addTransferMoney',
@@ -268,55 +267,6 @@ class _TransferMoneyState extends ConsumerState<TransferMoney> {
           style: TextStyle(color: Colors.white, fontSize: fixedSize * 0.01),
         ),
       ],
-    );
-  }
-
-  void _handleTransferSuccess() {
-    _showSuccessDialog();
-  }
-
-  void _handleTransferFailure() {
-    _showErrorDialog('ການຢືນຢັນຕົວຕົນລົ້ມເຫລວ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.');
-  }
-
-  void _handleTransferWithoutBiometric() {
-    _showSuccessDialog();
-  }
-
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ສຳເລັດ'),
-        content: const Text('ການໂອນເງິນສຳເລັດແລ້ວ'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Go back to previous screen
-            },
-            child: const Text('ຕົກລົງ'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ຂໍ້ຜິດພາດ'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('ຕົກລົງ'),
-          ),
-        ],
-      ),
     );
   }
 }

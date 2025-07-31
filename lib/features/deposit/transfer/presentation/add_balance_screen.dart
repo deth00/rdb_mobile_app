@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
@@ -17,13 +18,17 @@ class AddBalanceScreen extends ConsumerStatefulWidget {
 class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
   final TextEditingController _amountController = TextEditingController();
   bool _acceptedTerms = false;
+  bool _isSubmitting = false;
+  TransferState? _previousState;
 
   @override
   void initState() {
     super.initState();
     // Load current user limit
-    Future.microtask(() {
-      ref.read(transferNotifierProvider.notifier).getUserLimit();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(transferNotifierProvider.notifier).getUserLimit();
+      }
     });
   }
 
@@ -39,38 +44,8 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     final fixedSize = size.width + size.height;
     final transferState = ref.watch(transferNotifierProvider);
 
-    // Listen for success state
-    ref.listen<TransferState>(transferNotifierProvider, (previous, next) {
-      if (next.isLimitUpdateSuccess && next.successMessage != null) {
-        showCustomSnackBar(context, next.successMessage!, isError: false);
-        // Reset success state after showing message
-        Future.delayed(const Duration(milliseconds: 500), () {
-          ref.read(transferNotifierProvider.notifier).clearSuccess();
-        });
-        Navigator.of(context).pop();
-      }
-      if (next.errorMessage != null) {
-        final isServerError =
-            next.errorMessage!.contains('500') ||
-            next.errorMessage!.contains('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ');
-
-        showCustomSnackBar(context, next.errorMessage!, isError: true);
-
-        // Show retry dialog for server errors
-        if (isServerError) {
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              _showRetryDialog();
-            }
-          });
-        }
-
-        // Clear error after showing message
-        Future.delayed(const Duration(seconds: 3), () {
-          ref.read(transferNotifierProvider.notifier).clearError();
-        });
-      }
-    });
+    // Handle state changes
+    _handleStateChanges(transferState);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -255,7 +230,7 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                     fixedSize,
                   ),
                   _buildTermItem(
-                    'ຄ່າທໍານຽມເພີ່ມລິມິດ 20,000 LAK/ເດືອນ ຈະຖືກຫັກອັດຕະໂນມັດຫຼັງຈາກສະໝັກ ແລະ ເດືອນຕໍ່ໄປຈົນກວ່າຈະຍົກເລີກ',
+                    'ຄ່າທໍານຽມເພີ່ມລິມິດ 20,000 LAK/ເດືອນ ຈະຖືກຫັກອັດຕະໂນມັດຫຼັງຈາກສະໝັກ ແລະ ເດືອນຕໍ່ໄປຈະຍົກເລີກ',
                     fixedSize,
                   ),
                   _buildTermItem(
@@ -324,6 +299,80 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     );
   }
 
+  void _handleStateChanges(TransferState currentState) {
+    // Check if this is a new state (not the initial build)
+    if (_previousState != null) {
+      // Handle success state
+      if (currentState.isLimitUpdateSuccess &&
+          currentState.successMessage != null &&
+          !_previousState!.isLimitUpdateSuccess) {
+        // Schedule snackbar to show after build is complete
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            showCustomSnackBar(
+              context,
+              currentState.successMessage!,
+              isError: false,
+            );
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
+        });
+        // Reset success state after showing message
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            ref.read(transferNotifierProvider.notifier).clearSuccess();
+          }
+        });
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      }
+
+      // Handle error state
+      if (currentState.errorMessage != null &&
+          currentState.errorMessage != _previousState!.errorMessage) {
+        final isServerError =
+            currentState.errorMessage!.contains('500') ||
+            currentState.errorMessage!.contains('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ');
+
+        // Schedule snackbar to show after build is complete
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            showCustomSnackBar(
+              context,
+              currentState.errorMessage!,
+              isError: true,
+            );
+            setState(() {
+              _isSubmitting = false;
+            });
+          }
+        });
+
+        // Show retry dialog for server errors
+        if (isServerError) {
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              _showRetryDialog();
+            }
+          });
+        }
+
+        // Clear error after showing message
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            ref.read(transferNotifierProvider.notifier).clearError();
+          }
+        });
+      }
+    }
+
+    // Update previous state
+    _previousState = currentState;
+  }
+
   Widget _buildServiceDetail(String label, String value, double fixedSize) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -389,7 +438,8 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
         amount > currentLimit &&
         amount <= maxLimit &&
         _acceptedTerms &&
-        !transferState.isLoading;
+        !transferState.isLoading &&
+        !_isSubmitting;
 
     return Container(
       padding: EdgeInsets.all(fixedSize * 0.02),
@@ -438,6 +488,8 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
   }
 
   void _handleSubmit() {
+    if (!mounted || _isSubmitting) return;
+
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     final currentLimit =
         ref.read(transferNotifierProvider).userLimit?.transferLimit ?? 0;
@@ -482,7 +534,12 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
       return;
     }
 
-    ref.read(transferNotifierProvider.notifier).updateTransferLimit(amount);
+    if (mounted) {
+      setState(() {
+        _isSubmitting = true;
+      });
+      ref.read(transferNotifierProvider.notifier).updateTransferLimit(amount);
+    }
   }
 
   String _formatCurrency(double amount) {
@@ -498,7 +555,7 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ'),
+        title: const Text('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ123'),
         content: const Text('ກະລຸນາລອງໃໝ່ອີກຄັ້ງ ຫຼື ຕິດຕໍ່ຜູ້ໃຫ້ບໍລິການ'),
         actions: [
           TextButton(
@@ -510,7 +567,9 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _handleSubmit(); // Retry the operation
+              if (mounted) {
+                _handleSubmit(); // Retry the operation
+              }
             },
             child: const Text('ລອງໃໝ່'),
           ),

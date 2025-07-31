@@ -15,15 +15,15 @@ void main() async {
   await initializeDateFormatting('lo');
 
   // Add error handling for late initialization errors
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-  };
+  // FlutterError.onError = (FlutterErrorDetails details) {
+  //   FlutterError.presentError(details);
+  // };
 
-  // Add error handling for async errors
-  PlatformDispatcher.instance.onError = (error, stack) {
-    print('Caught error: $error');
-    return true;
-  };
+  // // Add error handling for async errors
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   print('Caught error: $error');
+  //   return true;
+  // };
 
   runApp(
     ScreenUtilInit(

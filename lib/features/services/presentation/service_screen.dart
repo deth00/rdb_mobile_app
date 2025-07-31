@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 import 'package:moblie_banking/widgets/service_buttom.dart';
@@ -18,7 +19,7 @@ class ServiceScreen extends StatelessWidget {
               title: 'ສະຖານທີ່ບໍລິການ',
               text: 'ສາຂາ ແລະ ໜ່ວຍບໍລິການ',
               image: AppImage.location,
-              onpress: () {},
+              onpress: () => context.push('/location'),
             ),
 
             ServiceButtom(

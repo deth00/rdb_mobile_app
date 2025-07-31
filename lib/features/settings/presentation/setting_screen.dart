@@ -72,10 +72,13 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
                       ),
               ),
 
-            const ServiceButtom(
+            ServiceButtom(
               title: 'ຈັດການອຸປະກອນ',
               text: 'ກຳນົດອຸປະກອນທີ່ໃຊ້ຮັບແຈ້ງເຕືອນ',
               image: AppImage.mobile,
+              onpress: () {
+                context.pushNamed('checkDevices');
+              },
             ),
             const ServiceButtom(
               title: 'ຕັ້ງຄ່າແຈ້ງເຕືອນ',

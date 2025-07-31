@@ -103,7 +103,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         itemCount: slides.length,
                         itemBuilder: (context, index, realIndex) {
                           final slide = slides[index];
-                          print('Slide image URL: ${slide.img}');
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(
                               fixedSize * 0.01,
@@ -157,15 +156,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'null',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: fixedSize * 0.013,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  SizedBox(height: fixedSize * 0.003),
+                                  // Text(
+                                  //   'null',
+                                  //   style: TextStyle(
+                                  //     color: Colors.black,
+                                  //     fontSize: fixedSize * 0.013,
+                                  //     fontWeight: FontWeight.w500,
+                                  //   ),
+                                  // ),
+                                  // SizedBox(height: fixedSize * 0.003),
                                   Text(
                                     '${user.firstName} ${user.lastName}',
                                     style: TextStyle(
@@ -270,27 +269,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onTap: () {
                           context.pushNamed(
                             'webview',
-                            queryParameters: {'url': 'https://fund.nbb.com.la'},
+                            queryParameters: {
+                              'url': 'https://www.google.co.th',
+                            },
                           );
                         },
                         child: Padding(
                           padding: EdgeInsets.only(right: fixedSize * 0.001),
-                          child: SizedBox(
+                          child: Container(
+                            color: Colors.white,
                             width: fixedSize * 0.16,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                // Text(
+                                //   '',
+                                //   style: TextStyle(
+                                //     color: Colors.black,
+                                //     fontSize: fixedSize * 0.013,
+                                //     fontWeight: FontWeight.w500,
+                                //   ),
+                                // ),
                                 Text(
-                                  '',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: fixedSize * 0.013,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  'ງານກອງທຶນ',
+                                  'ເງິນກອງທຶນ',
                                   style: TextStyle(
                                     color: Colors.grey,
                                     fontSize: fixedSize * 0.012,
@@ -323,76 +325,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 acDpt.isLoading
-                    ? Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(),
-                              SizedBox(height: fixedSize * 0.01),
-                              Text('ກຳລັງໂຫຼດຂໍ້ມູນບັນຊີ...'),
-                            ],
-                          ),
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: fixedSize * 0.01),
+                            // Text('ກຳລັງໂຫຼດຂໍ້ມູນບັນຊີ...'),
+                          ],
                         ),
                       )
                     : acDpt.errorMessage != null
-                    ? Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                size: 64,
-                                color: Colors.red,
-                              ),
-                              SizedBox(height: fixedSize * 0.01),
-                              Text(
-                                acDpt.errorMessage!,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              SizedBox(height: fixedSize * 0.01),
-                              ElevatedButton(
-                                onPressed: () {
-                                  ref
-                                      .read(homeNotifierProvider.notifier)
-                                      .clearError();
-                                  ref
-                                      .read(homeNotifierProvider.notifier)
-                                      .getAccountDPT();
-                                },
-                                child: Text('ລອງໃໝ່'),
-                              ),
-                            ],
-                          ),
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 64,
+                              color: Colors.red,
+                            ),
+                            SizedBox(height: fixedSize * 0.01),
+                            Text(
+                              'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບ Server',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            SizedBox(height: fixedSize * 0.01),
+                            ElevatedButton(
+                              onPressed: () {
+                                ref
+                                    .read(homeNotifierProvider.notifier)
+                                    .clearError();
+                                ref
+                                    .read(homeNotifierProvider.notifier)
+                                    .getAccountDPT();
+                              },
+                              child: Text('ລອງໃໝ່'),
+                            ),
+                          ],
                         ),
                       )
                     : acDpt.accountDpt.isEmpty
-                    ? Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.account_balance,
-                                size: 64,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(height: fixedSize * 0.01),
-                              Text(
-                                'ບໍ່ມີບັນຊີ',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              SizedBox(height: fixedSize * 0.01),
-                              ElevatedButton(
-                                onPressed: () {
-                                  context.pushNamed('addACDPT');
-                                },
-                                child: Text('ເພີ່ມບັນຊີ'),
-                              ),
-                            ],
-                          ),
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.account_balance,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: fixedSize * 0.01),
+                            Text(
+                              'ບໍ່ມີບັນຊີ',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                            SizedBox(height: fixedSize * 0.01),
+                            ElevatedButton(
+                              onPressed: () {
+                                context.pushNamed('addACDPT');
+                              },
+                              child: Text('ເພີ່ມບັນຊີ'),
+                            ),
+                          ],
                         ),
                       )
                     : Expanded(

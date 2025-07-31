@@ -40,4 +40,8 @@ class AppImage {
   static const feedback = 'assets/icons/feedback.svg';
   static const show = 'assets/icons/show.svg';
   static const bill = 'assets/images/bill.svg';
+  static const lordb = 'assets/icons/lordb.png';
+  static const sinsamla = 'assets/icons/s_samla.svg';
+  static const sinbusi = 'assets/icons/s_busi.svg';
+  static const sinnayo = 'assets/icons/s_nayo.svg';
 }

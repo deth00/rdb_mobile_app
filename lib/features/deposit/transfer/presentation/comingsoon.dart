@@ -12,8 +12,17 @@ class ComingSoonScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: GradientAppBar(title: ''),
       body: Center(
+        // child: Text(
+        //   'Coming\nSoon...',
+        //   textAlign: TextAlign.center,
+        //   style: TextStyle(
+        //     fontSize: 50,
+        //     fontWeight: FontWeight.bold,
+        //     color: AppColors.color1,
+        //   ),
+        // ),
         child: Text(
-          'Coming\nSoon...',
+          'ກຳລັງ\nພັດທະນາ...',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 50,
