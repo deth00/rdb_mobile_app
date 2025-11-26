@@ -7,7 +7,7 @@ class SplashController {
   static final _biometricAuth = BiometricAuth();
 
   static Future<bool> isLoggedIn() async {
-    final token = await _storage.getAccessToken();
+    final token = await _storage.getRefreshToken();
     return token != null && token.isNotEmpty;
   }
 

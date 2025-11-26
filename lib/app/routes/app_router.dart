@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/nav.dart';
 import 'package:moblie_banking/features/account/presentation/account_screen.dart';
+import 'package:moblie_banking/features/auth/logic/auth_provider.dart';
 import 'package:moblie_banking/features/auth/presentation/check_phone_screen.dart';
 import 'package:moblie_banking/features/auth/presentation/create_password_screen.dart';
 import 'package:moblie_banking/features/auth/presentation/forget_password_screen.dart';
@@ -10,6 +11,11 @@ import 'package:moblie_banking/features/auth/presentation/logged_in_login_screen
 import 'package:moblie_banking/features/auth/presentation/login_screen.dart';
 import 'package:moblie_banking/features/deposit/financial/presentation/finan_home.dart';
 import 'package:moblie_banking/features/deposit/transaction/presentation/transaction_screen.dart';
+import 'package:moblie_banking/features/deposit/transaction/presentation/transaction_detail_screen.dart';
+import 'package:moblie_banking/core/models/transaction_model.dart';
+import 'package:moblie_banking/features/deposit/account/presentation/select_primary_account_screen.dart';
+import 'package:moblie_banking/features/notification/presentation/notification_detail_screen.dart';
+import 'package:moblie_banking/core/utils/route_constants.dart';
 import 'package:moblie_banking/features/otp/presentation/otp_forgot_pw.dart';
 import 'package:moblie_banking/features/auth/presentation/register_screen.dart';
 import 'package:moblie_banking/features/deposit/transfer/presentation/comingsoon.dart';
@@ -34,6 +40,7 @@ import 'package:moblie_banking/features/webview/presentation/webview_screen.dart
 import 'package:moblie_banking/features/location/presentation/location_screen.dart';
 import 'package:moblie_banking/features/location/presentation/map_screen.dart';
 import 'package:moblie_banking/features/settings/presentation/check_device_screen.dart';
+import 'package:moblie_banking/features/auth/presentation/add_password_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   // final authRedirect = ref.watch(authRedirectProvider);
@@ -101,6 +108,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CreatePasswordScreen(),
       ),
       GoRoute(
+        path: '/addPassword',
+        name: 'addPassword',
+        builder: (context, state) {
+          final redirectUrl = state.uri.queryParameters['redirectUrl'] ?? '';
+          return AddPasswordScreen(redirectUrl: redirectUrl);
+        },
+      ),
+      GoRoute(
         path: '/transfer',
         name: 'transfer',
         builder: (context, state) => const TransferMoney(),
@@ -150,7 +165,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/check',
         name: 'check',
         builder: (context, state) => const CheckPaymentScreen(),
-        
       ),
       GoRoute(
         path: '/calendar',
@@ -175,6 +189,54 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/financial',
         name: 'financial',
         builder: (context, state) => const FinancialPage(),
+      ),
+      GoRoute(
+        path: '/select-primary-account',
+        name: RouteConstants.selectPrimaryAccount,
+        builder: (context, state) => const SelectPrimaryAccountScreen(),
+      ),
+      GoRoute(
+        path: '/notification-detail/:id',
+        name: RouteConstants.notificationDetail,
+        builder: (context, state) {
+          final notificationId = state.pathParameters['id'];
+          return NotificationDetailScreen(notificationId: notificationId);
+        },
+      ),
+      GoRoute(
+        path: '/transaction-detail/:acno',
+        name: RouteConstants.transactionDetail,
+        builder: (context, state) {
+          final acno = state.pathParameters['acno'] ?? '';
+          final title =
+              state.uri.queryParameters['title'] ?? 'Transaction Detail';
+
+          // Get transaction data from extra parameter
+          final transaction = state.extra as Transaction?;
+
+          if (transaction == null) {
+            // Fallback to default values if no transaction data
+            return TransactionDetailScreen(
+              transaction: Transaction(
+                txcode: '',
+                defacno: acno,
+                stdt: DateTime.now().toString(),
+                txrefid: '',
+                amt: 0.0,
+                descs: '',
+                valuedt: DateTime.now().toString(),
+                usrname: '',
+                descr: '',
+              ),
+              title: title,
+            );
+          }
+
+          return TransactionDetailScreen(
+            transaction: transaction,
+            title: title,
+          );
+        },
       ),
 
       ShellRoute(
@@ -204,10 +266,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AccountScreen(),
           ),
           GoRoute(
-            path: '/transactions',
+            path: '/transactions/:acno',
             name: 'transactions',
-            builder: (context, state) => const TransactionScreen(),
+            builder: (context, state) {
+              final acno = state.pathParameters['acno'] ?? '';
+              return TransactionScreen(acno: acno);
+            },
           ),
+
           GoRoute(
             path: '/settings',
             name: 'settings',
@@ -229,9 +295,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const LocationScreen(),
           ),
           GoRoute(
-            path: '/location/map',
+            path: '/location/map/:locationId',
             name: 'locationMap',
-            builder: (context, state) => const MapScreen(),
+            builder: (context, state) {
+              final locationId =
+                  int.tryParse(state.pathParameters['locationId'] ?? '1') ?? 1;
+              return MapScreen(pageId: locationId);
+            },
           ),
         ],
       ),

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
-import 'package:moblie_banking/core/utils/svg_icons.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 import 'package:moblie_banking/widgets/card_deposit.dart';
 import 'package:moblie_banking/features/deposit/้home/logic/dpt_provider.dart';
+import 'package:moblie_banking/features/deposit/account/logic/select_primary_account_state.dart';
+import 'package:moblie_banking/core/utils/route_constants.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeDeposit extends ConsumerStatefulWidget {
   final String acno;
@@ -28,12 +30,40 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
   }
 
   bool isVisible = false;
+  void _navigateToTransactions() async {
+    try {
+      // First navigate to select primary account screen
+      final result = await context.pushNamed(
+        RouteConstants.selectPrimaryAccount,
+      );
+
+      // If an account was selected, navigate to transactions screen
+      if (result != null && result is DepositAccount) {
+        final selectedAccount = result;
+        if (mounted) {
+          context.pushNamed(
+            RouteConstants.transactions,
+            pathParameters: {'acno': selectedAccount.accountNumber},
+          );
+        }
+      }
+    } catch (e) {
+      // Handle any navigation errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ເກີດຂໍ້ຜິດພາດໃນການນຳທາງ'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dptNotifierProvider);
     final detail = state.accountDetail;
-    final fixedSize =
-        MediaQuery.of(context).size.height + MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -47,17 +77,22 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                 children: [
                   // ✅ Card ບັນຊີ
                   Container(
-                    height: fixedSize * 0.075,
+                    height: 120.h,
                     width: double.infinity,
-                    decoration: BoxDecoration(color: AppColors.bgColor2),
+                    decoration: BoxDecoration(
+                      color: AppColors.color2.withOpacity(0.1),
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.all(fixedSize * 0.005),
+                      padding: EdgeInsets.all(5.w),
                       child: Row(
                         children: [
-                          Image.asset(AppImage.mF, width: 70.w),
-                          SizedBox(width: fixedSize * 0.01),
+                          Image.asset(AppImage.mF, width: 100.w),
+                          SizedBox(width: 15.w),
                           if (detail == null)
-                            const Text('ບໍ່ມີຂໍ້ມູນ')
+                            Text(
+                              'ບໍ່ມີຂໍ້ມູນ',
+                              style: TextStyle(fontSize: 16.sp),
+                            )
                           else
                             Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -74,13 +109,13 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                                           : _maskAccount(detail.acNo),
                                       style: TextStyle(
                                         color: Colors.black.withOpacity(0.8),
-                                        fontSize: fixedSize * 0.014,
+                                        fontSize: 20.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     isVisible
-                                        ? SizedBox(width: fixedSize * 0.03)
-                                        : SizedBox(width: fixedSize * 0.06),
+                                        ? SizedBox(width: 15.w)
+                                        : SizedBox(width: 55.w),
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -88,18 +123,18 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                                         });
                                       },
                                       child: Container(
-                                        height: fixedSize * 0.02,
-                                        width: fixedSize * 0.05,
+                                        height: 35.h,
+                                        width: 70.w,
                                         decoration: BoxDecoration(
                                           color: AppColors.color1,
                                           borderRadius: BorderRadius.circular(
-                                            fixedSize * 0.007,
+                                            10.r,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.grey.shade400,
                                               offset: const Offset(1, 2),
-                                              blurRadius: 3,
+                                              blurRadius: 3.r,
                                             ),
                                           ],
                                         ),
@@ -109,7 +144,7 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
-                                              fontSize: fixedSize * 0.013,
+                                              fontSize: 14.sp,
                                             ),
                                           ),
                                         ),
@@ -120,12 +155,7 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                                 // 💰 ຍອດເງິນ
                                 Row(
                                   children: [
-                                    // Image.asset(
-                                    //   AppImage.kip,
-                                    //   scale: fixedSize * 0.03,
-                                    //   color: AppColors.color1,
-                                    // ),
-                                    SizedBox(width: fixedSize * 0.005),
+                                    SizedBox(width: 5.w),
                                     Text(
                                       isVisible
                                           ? (detail.balance > 0
@@ -139,7 +169,7 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                                           : 'xxxxx',
                                       style: TextStyle(
                                         color: Colors.black.withOpacity(0.8),
-                                        fontSize: fixedSize * 0.015,
+                                        fontSize: 20.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -151,18 +181,16 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
                       ),
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 20.h),
                   // ✅ ເມນູ Grid
                   Expanded(
                     child: GridView.count(
                       crossAxisCount: 3,
-                      crossAxisSpacing: fixedSize * 0.01,
+                      crossAxisSpacing: 15.w,
+                      mainAxisSpacing: 15.h,
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
                       children: [
-                        cardDeposit(
-                          text: 'ການເຄື່ອນໄຫວ',
-                          image: AppImage.trn,
-                          routeName: 'transactions',
-                        ),
+                        _buildTransactionCard(),
                         cardDeposit(
                           text: 'ບັນຊີ',
                           image: AppImage.bunc,
@@ -212,5 +240,26 @@ class _HomeDepositState extends ConsumerState<HomeDeposit> {
   String _maskAccount(String acNo) {
     if (acNo.length < 10) return 'xxxx';
     return '${acNo.substring(0, 3)} xxxx xxxx ${acNo.substring(acNo.length - 3)}';
+  }
+
+  Widget _buildTransactionCard() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 5.w),
+      child: GestureDetector(
+        onTap: _navigateToTransactions,
+        child: SizedBox(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SvgPicture.asset(AppImage.trn, width: 80.w),
+              Text(
+                'ການເຄື່ອນໄຫວ',
+                style: TextStyle(fontSize: 16.sp, color: Colors.black),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

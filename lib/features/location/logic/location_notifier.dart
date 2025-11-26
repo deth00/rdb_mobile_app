@@ -19,78 +19,78 @@ class LocationNotifier extends StateNotifier<LocationState> {
       );
 
       // Check if we got any locations from the API
-      if (response.data.isEmpty) {
-        print('No locations received from API, using sample data');
-        // Use sample data for testing
-        final sampleLocations = [
-          LocationModel(
-            id: 1,
-            code: 'VTE001',
-            name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ສູນກາງ',
-            latitude: 17.9757,
-            longitude: 102.6331,
-          ),
-          LocationModel(
-            id: 2,
-            code: 'VTE002',
-            name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ສະຫວັນນະເຂດ',
-            latitude: 16.5560,
-            longitude: 104.7500,
-          ),
-          LocationModel(
-            id: 3,
-            code: 'VTE003',
-            name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ຫຼວງພະບາງ',
-            latitude: 19.8834,
-            longitude: 102.1347,
-          ),
-        ];
+      // if (response.data.isEmpty) {
+      //   print('No locations received from API, using sample data');
+      //   // Use sample data for testing
+      //   final sampleLocations = [
+      //     LocationModel(
+      //       id: 1,
+      //       code: 'VTE001',
+      //       name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ສູນກາງ',
+      //       latitude: 17.9757,
+      //       longitude: 102.6331,
+      //     ),
+      //     LocationModel(
+      //       id: 2,
+      //       code: 'VTE002',
+      //       name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ສະຫວັນນະເຂດ',
+      //       latitude: 16.5560,
+      //       longitude: 104.7500,
+      //     ),
+      //     LocationModel(
+      //       id: 3,
+      //       code: 'VTE003',
+      //       name: 'ສະຫະພັນການເງິນແຫ່ງສປປລາວ - ຫຼວງພະບາງ',
+      //       latitude: 19.8834,
+      //       longitude: 102.1347,
+      //     ),
+      //   ];
 
-        state = state.copyWith(
-          status: LocationStatus.success,
-          locations: sampleLocations,
-        );
-      } else {
-        // Add default coordinates for locations with null coordinates
-        final locationsWithDefaults = response.data.map((location) {
-          if (location.latitude == null || location.longitude == null) {
-            // Provide default coordinates based on location name
-            double? defaultLat, defaultLng;
+      //   state = state.copyWith(
+      //     status: LocationStatus.success,
+      //     locations: sampleLocations,
+      //   );
+      // } else {
+      // Add default coordinates for locations with null coordinates
+      final locationsWithDefaults = response.data.map((location) {
+        if (location.latitude == null || location.longitude == null) {
+          // Provide default coordinates based on location name
+          double? defaultLat, defaultLng;
 
-            // if (location.name.contains('ຊຽງຂວາງ')) {
-            //   defaultLat = 19.3333;
-            //   defaultLng = 103.3667;
-            // } else if (location.name.contains('ຫຼວງພະບາງ')) {
-            //   defaultLat = 19.8834;
-            //   defaultLng = 102.1347;
-            // } else if (location.name.contains('ຈໍາປາສັກ')) {
-            //   defaultLat = 14.8167;
-            //   defaultLng = 106.8167;
-            // } else if (location.name.contains('ຫົວພັນ')) {
-            //   defaultLat = 20.4167;
-            //   defaultLng = 103.6667;
-            // } else {
-            //   // Default to Vientiane if no specific location found
-            //   defaultLat = 17.9757;
-            //   defaultLng = 102.6331;
-            // }
+          // if (location.name.contains('ຊຽງຂວາງ')) {
+          //   defaultLat = 19.3333;
+          //   defaultLng = 103.3667;
+          // } else if (location.name.contains('ຫຼວງພະບາງ')) {
+          //   defaultLat = 19.8834;
+          //   defaultLng = 102.1347;
+          // } else if (location.name.contains('ຈໍາປາສັກ')) {
+          //   defaultLat = 14.8167;
+          //   defaultLng = 106.8167;
+          // } else if (location.name.contains('ຫົວພັນ')) {
+          //   defaultLat = 20.4167;
+          //   defaultLng = 103.6667;
+          // } else {
+          //   // Default to Vientiane if no specific location found
+          //   defaultLat = 17.9757;
+          //   defaultLng = 102.6331;
+          // }
 
-            return LocationModel(
-              id: location.id,
-              code: location.code,
-              name: location.name,
-              latitude: defaultLat,
-              longitude: defaultLng,
-            );
-          }
-          return location;
-        }).toList();
+          return LocationModel(
+            id: location.id,
+            code: location.code,
+            name: location.name,
+            latitude: defaultLat,
+            longitude: defaultLng,
+          );
+        }
+        return location;
+      }).toList();
 
-        state = state.copyWith(
-          status: LocationStatus.success,
-          locations: locationsWithDefaults,
-        );
-      }
+      state = state.copyWith(
+        status: LocationStatus.success,
+        locations: locationsWithDefaults,
+      );
+      // }
       print('Location state updated successfully');
     } catch (e) {
       print('Error fetching locations: $e');

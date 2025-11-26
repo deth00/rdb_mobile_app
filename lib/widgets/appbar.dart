@@ -26,8 +26,6 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return AppBar(
       iconTheme: IconThemeData(color: Colors.white),
       backgroundColor: Colors.transparent,
@@ -48,9 +46,10 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
           // ),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
+              fontSize: 20.sp,
             ),
           ),
         ],
@@ -58,10 +57,7 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: isLogout == true
           ? [
               Padding(
-                padding: EdgeInsets.only(
-                  top: fixedSize * 0.0075,
-                  right: fixedSize * 0.01,
-                ),
+                padding: EdgeInsets.only(top: 10.h, right: 15.w),
                 child: GestureDetector(
                   onTap: () {
                     context.goNamed('login');
@@ -76,7 +72,7 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                       Text(
                         'ອອກລະບົບ',
                         style: TextStyle(
-                          fontSize: fixedSize * 0.01,
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

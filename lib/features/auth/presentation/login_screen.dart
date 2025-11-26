@@ -81,28 +81,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     double fixedSize = size.width + size.height;
     final isLoading = ref.watch(authNotifierProvider).isLoading;
-    final authController = ref.read(authNotifierProvider.notifier);
-    final authState = ref.watch(authNotifierProvider);
+    // final authController = ref.read(authNotifierProvider.notifier);
+    // final authState = ref.watch(authNotifierProvider);
     final slideAsync = ref.watch(slideProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 30.h),
-              Center(child: Image.asset(AppImage.lordb, height: 160.h)),
-              // Center(child: SvgPicture.asset(SvgIcons.logoApp, height: 160.h)),
+              SizedBox(height: 20.h),
+              Center(child: Image.asset(AppImage.logordb, width: 200.w)),
               Text(
                 'Pay smart, Live easy',
                 style: TextStyle(
-                  fontSize: 18.sp,
+                  fontSize: 19.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.color1,
                 ),
@@ -169,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               //   ),
               // ),
               Container(
-                height: 245.h,
+                height: 250.h,
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   // color: Colors.amber,
@@ -183,15 +180,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     SizedBox(height: 5.h),
                     Container(
-                      padding: EdgeInsets.all(3),
+                      padding: EdgeInsets.all(3.r),
                       decoration: BoxDecoration(
                         gradient: AppColors.main,
-                        borderRadius: BorderRadius.all(Radius.circular(40)),
+                        borderRadius: BorderRadius.all(Radius.circular(40.r)),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 3,
+                            blurRadius: 3.r,
                             color: Colors.grey.shade400,
-                            offset: Offset(0, 5),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -208,13 +205,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     SizedBox(height: 20.h),
                     Container(
-                      padding: EdgeInsets.all(3),
+                      padding: EdgeInsets.all(3.r),
                       decoration: BoxDecoration(
                         gradient: AppColors.main,
-                        borderRadius: BorderRadius.all(Radius.circular(40)),
+                        borderRadius: BorderRadius.all(Radius.circular(40.r)),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 3,
+                            blurRadius: 3.r,
                             color: Colors.grey.shade400,
                             offset: Offset(0, 5),
                           ),
@@ -251,8 +248,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               Container(
-                                height: 50.h,
-                                width: 230.w,
+                                height: 55.h,
+                                width: 240.w,
                                 decoration: BoxDecoration(
                                   gradient: AppColors.main,
                                   borderRadius: BorderRadius.all(
@@ -278,18 +275,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              
                             ],
                           ),
                         ),
                       ),
                     ),
+                    SizedBox(height: 10.h),
                     Padding(
-                      padding: EdgeInsets.only(
-                        left: 30.w,
-                        right: 30.w,
-                        top: 10.h,
-                      ),
+                      padding: EdgeInsets.only(left: 30.w, right: 30.w),
                       child: Row(
                         // mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -301,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: Text(
                               'ລືມລະຫັດຜ່ານ ?   ',
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -314,7 +307,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: Text(
                               'ລົງທະບຽນ',
                               style: TextStyle(
-                                fontSize: 14.sp,
+                                fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                                 decoration: TextDecoration.underline,
                               ),
@@ -327,7 +320,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(left: 10.w, right: 10.w, bottom: 10.h),
+                padding: EdgeInsets.only(bottom: 15.h, top: 15.h),
                 child: SizedBox(
                   height: fixedSize * 0.13,
                   width: double.infinity,
@@ -339,12 +332,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.error_outline, color: Colors.red),
-                          SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             'ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດສະໄລດ໌',
                             style: TextStyle(color: Colors.red),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 8.h),
                           Text(
                             err.toString(),
                             style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -385,11 +378,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Container(
-                        height: 45.h,
-                        width: 150.w,
+                        height: 50.h,
+                        width: 170.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
+                          borderRadius: BorderRadius.all(Radius.circular(30.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
@@ -407,14 +400,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               children: [
                                 SvgPicture.asset(
                                   SvgIcons.logoF,
-                                  height: 20.h,
-                                  width: 20.w,
+                                  height: 25.h,
+                                  width: 25.w,
                                 ),
-                                SizedBox(width: 5.w),
+                                SizedBox(width: 10.w),
                                 Text(
                                   'RDB BANK',
                                   style: TextStyle(
-                                    fontSize: 13.sp,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -425,16 +418,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       Container(
-                        height: 45.h,
-                        width: 150.w,
+                        height: 50.h,
+                        width: 170.w,
                         decoration: BoxDecoration(
                           color: AppColors.color1,
-                          borderRadius: BorderRadius.all(Radius.circular(20.r)),
+                          borderRadius: BorderRadius.all(Radius.circular(30.r)),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.shade500,
                               offset: const Offset(0, 3),
-                              blurRadius: 7,
+                              blurRadius: 7.r,
                             ),
                           ],
                         ),
@@ -447,14 +440,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               children: [
                                 SvgPicture.asset(
                                   SvgIcons.iconW,
-                                  height: 20.h,
-                                  width: 20.w,
+                                  height: 25.h,
+                                  width: 25.w,
                                 ),
                                 SizedBox(width: 5.w),
                                 Text(
                                   'www.nbb.com.la',
                                   style: TextStyle(
-                                    fontSize: 13.sp,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -475,18 +468,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           context.pushNamed('calendar');
                         },
                         child: Container(
-                          height: 45.h,
-                          width: 150.w,
+                          height: 50.h,
+                          width: 170.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(20.r),
+                              Radius.circular(30.r),
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.shade500,
                                 offset: const Offset(0, 3),
-                                blurRadius: 7,
+                                blurRadius: 7.r,
                               ),
                             ],
                           ),
@@ -497,14 +490,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               children: [
                                 SvgPicture.asset(
                                   SvgIcons.calendar,
-                                  height: 20.h,
-                                  width: 20.w,
+                                  height: 25.h,
+                                  width: 25.w,
                                 ),
                                 SizedBox(width: 5.w),
                                 Text(
                                   'calendar',
                                   style: TextStyle(
-                                    fontSize: 13.sp,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -517,18 +510,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       GestureDetector(
                         onTap: () {},
                         child: Container(
-                          height: 45.h,
-                          width: 150.w,
+                          height: 50.h,
+                          width: 170.w,
                           decoration: BoxDecoration(
                             color: AppColors.color1,
                             borderRadius: BorderRadius.all(
-                              Radius.circular(20.r),
+                              Radius.circular(30.r),
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.grey.shade500,
                                 offset: const Offset(0, 3),
-                                blurRadius: 7,
+                                blurRadius: 7.r,
                               ),
                             ],
                           ),
@@ -539,14 +532,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               children: [
                                 SvgPicture.asset(
                                   SvgIcons.other,
-                                  height: 20.h,
-                                  width: 20.w,
+                                  height: 25.h,
+                                  width: 25.w,
                                 ),
                                 SizedBox(width: 5.w),
                                 Text(
                                   'ບໍລິການອື່ນໆ',
                                   style: TextStyle(
-                                    fontSize: 13.sp,
+                                    fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -667,5 +660,4 @@ class AppTextField extends StatelessWidget {
       ),
     );
   }
-
 }

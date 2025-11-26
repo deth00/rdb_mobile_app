@@ -12,6 +12,7 @@ class SecureStorage {
   static const _phone = 'phone';
   static const _userAgentKey = 'user_agent';
   static const _name = 'username';
+  static const _password = 'password';
 
   final _auth = LocalAuthentication();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -78,6 +79,40 @@ class SecureStorage {
     await _storage.deleteAll();
   }
 
+  /// Clear all data except preserved keys (_refreshTokenKey, _biometricKey, _name)
+  Future<void> clearAllExceptPreserved() async {
+    try {
+      // Get all keys from storage
+      final allKeys = await _storage.readAll();
+
+      // Define keys to preserve
+      final keysToPreserve = [_refreshTokenKey, _biometricKey, _name, _phone];
+
+      // Delete all keys except the preserved ones
+      for (final key in allKeys.keys) {
+        if (!keysToPreserve.contains(key)) {
+          await _storage.delete(key: key);
+        }
+      }
+    } catch (e) {
+      // If there's an error reading secure storage (corrupted data),
+      // try to clear everything and start fresh
+      print('Error reading secure storage: $e');
+      try {
+        await _storage.deleteAll();
+        print('Cleared all secure storage due to corruption');
+      } catch (clearError) {
+        print('Failed to clear secure storage: $clearError');
+        // If even clearing fails, we can't do much - just continue
+      }
+    }
+  }
+
+  /// Clear password only
+  Future<void> clearPassword() async {
+    await _storage.delete(key: _password);
+  }
+
   /// Save biometric enabled flag
   Future<void> setBiometricEnabled(bool enabled) async {
     await _storage.write(key: _biometricKey, value: enabled.toString());
@@ -126,6 +161,16 @@ class SecureStorage {
 
   Future<String?> getName() async {
     return await _storage.read(key: _name);
+  }
+
+  /// Save password for authentication
+  Future<void> savePassword(String password) async {
+    await _storage.write(key: _password, value: password);
+  }
+
+  /// Get stored password for authentication
+  Future<String?> getPassword() async {
+    return await _storage.read(key: _password);
   }
 
   Future<void> saveUserAgent(String userAgent) async {

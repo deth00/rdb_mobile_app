@@ -41,7 +41,10 @@ class AppImage {
   static const show = 'assets/icons/show.svg';
   static const bill = 'assets/images/bill.svg';
   static const lordb = 'assets/icons/lordb.png';
+  static const logordb = 'assets/icons/logordb.png';
   static const sinsamla = 'assets/icons/s_samla.svg';
   static const sinbusi = 'assets/icons/s_busi.svg';
   static const sinnayo = 'assets/icons/s_nayo.svg';
+  static const laos = 'assets/icons/flag-lao.svg';
+  static const fb = 'assets/icons/fb.svg';
 }

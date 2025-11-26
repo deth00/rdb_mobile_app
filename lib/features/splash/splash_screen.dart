@@ -75,38 +75,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: fixedSize * 0.01),
+          padding: EdgeInsets.symmetric(vertical: 20.h),
           child: Center(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 1.h),
-                SvgPicture.asset(SvgIcons.logoApp, height: 200.h),
+                // SizedBox(height: 1.h),
+                Image.asset(AppImage.lordb, fit: BoxFit.cover),
 
                 // BankingIcons.logo(width: fixedSize * 0.3, height: fixedSize * 0.3),
                 Column(
                   children: [
-                    Text(
-                      'ທະນາຄານພັດທະນາຊົນນະບົດ',
-                      style: TextStyle(
-                        fontSize: fixedSize * 0.018,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'RDB BANK',
-                      style: TextStyle(
-                        fontSize: fixedSize * 0.018,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // Text(
+                    //   'ທະນາຄານພັດທະນາຊົນນະບົດ',
+                    //   style: TextStyle(
+                    //     fontSize: fixedSize * 0.018,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                    // Text(
+                    //   'RDB BANK',
+                    //   style: TextStyle(
+                    //     fontSize: fixedSize * 0.018,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
                   ],
                 ),
               ],

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
+import 'package:moblie_banking/core/utils/route_constants.dart';
 import 'package:moblie_banking/features/notification/logic/notification_provider.dart';
 import 'package:moblie_banking/features/deposit/transaction/logic/transaction_provider.dart';
+import 'package:moblie_banking/features/deposit/้home/logic/dpt_provider.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 
 class NotificationScreen extends ConsumerStatefulWidget {
@@ -20,18 +23,23 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      // Load notifications
-      ref.read(notificationNotifierProvider.notifier).getNotifications();
-      // Load transactions to sync with notifications
-      ref.read(transactionNotifierProvider.notifier).fetchTransactions();
+      // Clear any existing notifications to ensure no mock data is shown
+      ref.read(notificationNotifierProvider.notifier).clearAllNotifications();
+
+      // Load transactions to sync with notifications (only real data)
+      final dptState = ref.read(dptNotifierProvider);
+      final acno = dptState.accountDetail?.acNo;
+
+      if (acno != null && acno.isNotEmpty) {
+        ref
+            .read(transactionNotifierProvider.notifier)
+            .fetchTransactions(acno: acno);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
-
     // Watch both notification and transaction states
     final notificationState = ref.watch(notificationNotifierProvider);
     final transactionState = ref.watch(transactionNotifierProvider);
@@ -74,14 +82,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   child: Row(
                     children: [
                       Icon(Icons.mark_email_read, color: AppColors.color1),
-                      SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       Text('ມາກທັງໝົດວ່າອ່ານແລ້ວ'),
                     ],
                   ),
                 ),
               ],
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.r),
                 child: Icon(Icons.more_vert, color: Colors.white),
               ),
             ),
@@ -93,7 +101,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: AppColors.color1),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 20.h),
                   Text('ກຳລັງໂຫຼດການແຈ້ງເຕືອນ...'),
                 ],
               ),
@@ -103,22 +111,19 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  SizedBox(height: fixedSize * 0.01),
+                  Icon(Icons.error_outline, size: 64.sp, color: Colors.red),
+                  SizedBox(height: 20.h),
                   Text(
                     notificationState.errorMessage!,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.red),
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 20.h),
                   ElevatedButton(
                     onPressed: () {
                       ref
                           .read(notificationNotifierProvider.notifier)
                           .clearError();
-                      ref
-                          .read(notificationNotifierProvider.notifier)
-                          .getNotifications();
                     },
                     child: Text('ລອງໃໝ່'),
                   ),
@@ -130,23 +135,35 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-                  SizedBox(height: fixedSize * 0.01),
+                  Icon(
+                    Icons.notifications_none,
+                    size: 64.sp,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 20.h),
                   Text(
-                    'ບໍ່ມີການແຈ້ງເຕືອນ',
+                    'ບໍ່ມີການແຈ້ງເຕືອນໃໝ່',
                     style: TextStyle(color: Colors.grey),
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'ການແຈ້ງເຕືອນຈະປາກົດເມື່ອມີການເຄື່ອນໄຫວໃໝ່',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 10.sp),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             )
           : RefreshIndicator(
               onRefresh: () async {
-                await ref
-                    .read(notificationNotifierProvider.notifier)
-                    .getNotifications();
-                await ref
-                    .read(transactionNotifierProvider.notifier)
-                    .fetchTransactions();
+                final dptState = ref.read(dptNotifierProvider);
+                final acno = dptState.accountDetail?.acNo;
+
+                if (acno != null && acno.isNotEmpty) {
+                  await ref
+                      .read(transactionNotifierProvider.notifier)
+                      .fetchTransactions(acno: acno);
+                }
               },
               child: Column(
                 children: [
@@ -205,15 +222,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   // // Notifications list
                   Expanded(
                     child: ListView.separated(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: fixedSize * 0.01,
-                      ),
-                      separatorBuilder: (context, index) => Divider(height: 1),
+                      padding: EdgeInsets.symmetric(horizontal: 15.w),
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 1.h),
                       itemCount: notificationState.notifications.length,
                       itemBuilder: (context, index) {
                         final notification =
                             notificationState.notifications[index];
-                        return _buildNotificationTile(notification, fixedSize);
+                        return _buildNotificationTile(notification, 15.w);
                       },
                     ),
                   ),
@@ -223,13 +239,13 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
     );
   }
 
-  Widget _buildNotificationTile(notification, double fixedSize) {
+  Widget _buildNotificationTile(notification, double width) {
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20),
+        padding: EdgeInsets.only(right: 20.w),
         color: Colors.red,
         child: Icon(Icons.delete, color: Colors.white),
       ),
@@ -250,13 +266,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         );
       },
       child: ListTile(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: fixedSize * 0.01,
-          vertical: fixedSize * 0.005,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
         leading: Container(
-          width: fixedSize * 0.04,
-          height: fixedSize * 0.04,
+          width: 50.w,
+          height: 50.h,
           decoration: BoxDecoration(
             color: _getNotificationColor(notification.type),
             shape: BoxShape.circle,
@@ -264,7 +277,7 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
           child: Icon(
             _getNotificationIcon(notification.type),
             color: Colors.white,
-            size: fixedSize * 0.02,
+            size: 35.sp,
           ),
         ),
         title: Row(
@@ -276,14 +289,14 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
                   fontWeight: notification.isRead
                       ? FontWeight.normal
                       : FontWeight.bold,
-                  fontSize: fixedSize * 0.012,
+                  fontSize: 16.sp,
                 ),
               ),
             ),
             if (!notification.isRead)
               Container(
-                width: 8,
-                height: 8,
+                width: 8.w,
+                height: 8.h,
                 decoration: BoxDecoration(
                   color: AppColors.color1,
                   shape: BoxShape.circle,
@@ -294,42 +307,30 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: fixedSize * 0.003),
+            SizedBox(height: 5.h),
             Text(
               notification.message,
-              style: TextStyle(
-                fontSize: fixedSize * 0.011,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
             ),
             // Show additional transaction details for transaction notifications
             if (notification.type == 'transaction' &&
                 notification.metadata != null) ...[
-              SizedBox(height: fixedSize * 0.002),
+              SizedBox(height: 5.h),
               Text(
                 'ເລກອ້າງອີງ: ${notification.metadata!['transaction_id']}',
-                style: TextStyle(
-                  fontSize: fixedSize * 0.010,
-                  color: Colors.grey[500],
-                ),
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[500]),
               ),
               if (notification.metadata!['description'] != null &&
                   notification.metadata!['description'].toString().isNotEmpty)
                 Text(
                   'ລາຍລະອຽດ: ${notification.metadata!['description']}',
-                  style: TextStyle(
-                    fontSize: fixedSize * 0.010,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 10.sp, color: Colors.grey[500]),
                 ),
             ],
-            SizedBox(height: fixedSize * 0.003),
+            SizedBox(height: 5.h),
             Text(
               _formatDateTime(notification.createdAt),
-              style: TextStyle(
-                fontSize: fixedSize * 0.010,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 10.sp, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -394,103 +395,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen> {
   }
 
   void _handleNotificationAction(notification) {
-    // Handle different notification actions based on type and actionUrl
-    if (notification.actionUrl != null) {
-      // Navigate to specific screen or open URL
-      if (notification.actionUrl!.startsWith('http')) {
-        context.pushNamed(
-          'webview',
-          queryParameters: {'url': notification.actionUrl},
-        );
-      } else {
-        // Handle internal navigation
-        switch (notification.type) {
-          case 'transaction':
-            // Show transaction details dialog for transaction notifications
-            _showTransactionDetailsDialog(notification);
-            break;
-          case 'promotion':
-            context.pushNamed('services');
-            break;
-          default:
-            // Do nothing or show a snackbar
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('ການແຈ້ງເຕືອນ: ${notification.title}')),
-            );
-        }
-      }
-    }
-  }
-
-  void _showTransactionDetailsDialog(notification) {
-    final metadata = notification.metadata;
-    if (metadata == null) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('ລາຍລະອຽດການເຄື່ອນໄຫວ'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('ປະເພດ', notification.title),
-            _buildDetailRow('ເລກອ້າງອີງ', metadata['transaction_id'] ?? ''),
-            _buildDetailRow(
-              'ຈຳນວນເງິນ',
-              NumberFormat.currency(
-                locale: 'en_US',
-                symbol: 'ກີບ',
-                decimalDigits: 2,
-              ).format(metadata['amount'] ?? 0),
-            ),
-            _buildDetailRow('ບັນຊີ', metadata['account'] ?? ''),
-            if (metadata['description'] != null &&
-                metadata['description'].toString().isNotEmpty)
-              _buildDetailRow('ລາຍລະອຽດ', metadata['description']),
-            _buildDetailRow(
-              'ລະຫັດການເຄື່ອນໄຫວ',
-              metadata['transaction_code'] ?? '',
-            ),
-            _buildDetailRow(
-              'ວັນທີ',
-              DateFormat('dd/MM/yyyy HH:mm').format(notification.createdAt),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('ປິດ'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.pushNamed('transactions');
-            },
-            child: Text('ເບິ່ງທັງໝົດ'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(child: Text(value)),
-        ],
-      ),
+    // Navigate to notification detail screen
+    context.pushNamed(
+      RouteConstants.notificationDetail,
+      pathParameters: {'id': notification.id},
     );
   }
 }

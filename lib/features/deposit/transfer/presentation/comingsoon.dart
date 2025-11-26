@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
-import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 
 class ComingSoonScreen extends StatelessWidget {

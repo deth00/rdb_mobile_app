@@ -35,13 +35,12 @@ class DptNotifier extends StateNotifier<DptState> {
               'v1/act/get_fund_account_core/',
               queryParameters: {'acno': acno},
             );
-
+              
             if (fundResponse.statusCode == 200) {
               final fundAccountResponse = FundAccountResponse.fromJson(
                 fundResponse.data,
               );
-              if (fundAccountResponse.isHave &&
-                  fundAccountResponse.data.isNotEmpty) {
+              if (fundAccountResponse.data.isNotEmpty) {
                 balance = fundAccountResponse.data.first.balance;
               }
             }

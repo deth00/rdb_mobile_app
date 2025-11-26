@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CardInfo extends StatelessWidget {
   final String title;
@@ -13,12 +14,10 @@ class CardInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return Container(
-      height: fixedSize * 0.032,
+      height: 50.h,
       width: double.infinity,
-      padding: EdgeInsets.all(fixedSize * 0.008),
+      padding: EdgeInsets.all(10.w),
       decoration: const BoxDecoration(
         // color: Colors.red,
         border: Border(bottom: BorderSide(color: Colors.grey)),
@@ -32,7 +31,7 @@ class CardInfo extends StatelessWidget {
             style: TextStyle(
               color: Colors.black54,
               fontWeight: FontWeight.bold,
-              fontSize: fixedSize * 0.012,
+              fontSize: 16.sp,
             ),
           ),
           Text(text, style: style),

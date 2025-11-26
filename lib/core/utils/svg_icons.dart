@@ -43,6 +43,7 @@ class SvgIcons {
   static const String scan = 'assets/icons/scan.svg';
   static const String tho = 'assets/icons/tho.svg';
   static const String iconW = 'assets/icons/icon_web.svg';
+  static const String fb = 'assets/icons/fb.svg';
   // Logo and branding
   static const String logo = 'assets/icons/logo.svg';
   static const String logoApp = 'assets/icons/logo_app.svg';

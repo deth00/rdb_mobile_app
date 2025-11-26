@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
@@ -32,8 +33,6 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fixedSize =
-        MediaQuery.of(context).size.width + MediaQuery.of(context).size.height;
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
@@ -42,7 +41,7 @@ class _SettingScreenState extends ConsumerState<SettingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: fixedSize * 0.01),
+            SizedBox(height: 20.h),
             ServiceButtom(
               title: 'ປ່ຽນລະຫັດໃໝ່',
               text: 'ປ່ຽນລະຫັດຜ່ານເຂົ້າລະບົບ',

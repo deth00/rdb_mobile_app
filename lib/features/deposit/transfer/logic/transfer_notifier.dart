@@ -35,7 +35,6 @@ class TransferNotifier extends StateNotifier<TransferState> {
 
     try {
       final response = await dioClient.client.get('v1/user_limit');
-      print("ddddddddddddddddddddddddddddddddddd${123456}");
       if (response.statusCode == 200) {
         final userLimit = UserLimit.fromJson(response.data);
         state = state.copyWith(isLoading: false, userLimit: userLimit);
@@ -65,7 +64,7 @@ class TransferNotifier extends StateNotifier<TransferState> {
       if (response.statusCode == 200) {
         final fundAccountResponse = FundAccountResponse.fromJson(response.data);
 
-        if (fundAccountResponse.isHave && fundAccountResponse.data.isNotEmpty) {
+        if (fundAccountResponse.data.isNotEmpty) {
           final accountData = fundAccountResponse.data.first;
 
           // Create receiver account from fund account data
@@ -273,6 +272,10 @@ class TransferNotifier extends StateNotifier<TransferState> {
       successMessage: null,
       isTransferSuccess: false,
     );
+  }
+
+  void setTransferData(double amount, String details) {
+    state = state.copyWith(transferAmount: amount, transferDetails: details);
   }
 
   void reset() {

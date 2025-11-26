@@ -26,6 +26,7 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
   final pwControl = TextEditingController();
   bool _isObscure = true;
   String name = '';
+
   @override
   void initState() {
     super.initState();
@@ -128,6 +129,25 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
     }
   }
 
+  Future<bool> _authenticateBeforeNavigation({String? targetRoute}) async {
+    final authState = ref.read(authNotifierProvider);
+    // If user is not logged in, redirect to add password screen with target route
+    if (!authState.isLoggedIn) {
+      if (mounted) {
+        if (targetRoute != null) {
+          context.pushNamed(
+            'addPassword',
+            queryParameters: {'redirectUrl': targetRoute},
+          );
+        } else {
+          context.pushNamed('addPassword');
+        }
+      }
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -145,47 +165,78 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
 
               // Header with Logo and Icons
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     // Logo
-                    Image.asset(AppImage.lordb, scale: 20, fit: BoxFit.cover),
+                    Image.asset(AppImage.logordb, scale: 8, fit: BoxFit.cover),
                     _buildHeaderIcon(
-                      icon: Icons.facebook,
+                      svgIcon: SvgPicture.asset(
+                        SvgIcons.fb,
+                        height: 35.h,
+                        width: 35.w,
+                        color: AppColors.color1,
+                      ),
                       color: AppColors.color1,
                       onTap: () {},
                     ),
-                    SizedBox(width: 10.w),
+                    // SizedBox(width: 10.w),
                     _buildHeaderIcon(
-                      icon: Icons.language,
+                      svgIcon: SvgPicture.asset(
+                        SvgIcons.iconWeb,
+                        height: 35.h,
+                        width: 35.w,
+                        color: AppColors.color1,
+                      ),
                       color: AppColors.color1,
                       onTap: () {},
                     ),
-                    SizedBox(width: 10.w),
+                    // SizedBox(width: 10.w),
                     _buildHeaderIcon(
-                      icon: Icons.calendar_today,
+                      svgIcon: SvgPicture.asset(
+                        SvgIcons.calendar,
+                        height: 35.h,
+                        width: 35.w,
+                        color: AppColors.color1,
+                      ),
                       color: AppColors.color1,
-                      onTap: () {
-                        context.pushNamed('calendar');
+                      onTap: () async {
+                        if (!mounted) return;
+                        final authenticated =
+                            await _authenticateBeforeNavigation(
+                              targetRoute: 'calendar',
+                            );
+                        if (authenticated && mounted) {
+                          context.pushNamed('calendar');
+                        }
                       },
                     ),
-                    SizedBox(width: 10.w),
-                    Container(
-                      width: 35.w,
-                      height: 35.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                    // SizedBox(width: 10.w),
+                    _buildHeaderIcon(
+                      svgIcon: SvgPicture.asset(
+                        AppImage.laos,
+                        height: 35.h,
+                        width: 35.w,
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.flag_circle,
-                          color: AppColors.color1,
-                          size: 45.sp,
-                        ),
-                      ),
+                      color: AppColors.color1,
+                      onTap: () {},
                     ),
+                    // Container(
+                    //   width: 50.w,
+                    //   height: 50.w,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.white,
+                    //     shape: BoxShape.circle,
+                    //   ),
+                    //   child: Center(
+                    //     child: Icon(
+                    //       Icons.flag_circle,
+                    //       color: AppColors.color1,
+                    //       size: 45.sp,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -194,9 +245,9 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
 
               // Promotional Banner
               Padding(
-                padding: EdgeInsets.only(left: 10.w, right: 10.w, bottom: 10.h),
+                padding: EdgeInsets.only(bottom: 5.h),
                 child: SizedBox(
-                  height: fixedSize * 0.13,
+                  height: 200.h,
                   width: double.infinity,
                   child: slideAsync.when(
                     loading: () => Center(child: CircularProgressIndicator()),
@@ -247,33 +298,33 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                 ),
               ),
 
-              SizedBox(height: 25.h),
+              SizedBox(height: 20.h),
 
               // Login Form Section
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 10.w),
+                margin: EdgeInsets.symmetric(horizontal: 15.w),
                 child: Column(
                   children: [
                     // Username Field
                     Container(
-                      padding: EdgeInsets.all(3),
+                      height: 55.h,
+                      width: double.infinity,
+                      padding: EdgeInsets.all(3.r),
                       decoration: BoxDecoration(
                         gradient: AppColors.main,
-                        borderRadius: BorderRadius.all(Radius.circular(40)),
+                        borderRadius: BorderRadius.all(Radius.circular(40.r)),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 3,
+                            blurRadius: 3.r,
                             color: Colors.grey.shade400,
-                            offset: Offset(0, 5),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
                       child: Container(
-                        height: 50.h,
-                        width: 340.w,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.all(Radius.circular(40)),
+                          borderRadius: BorderRadius.all(Radius.circular(40.r)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -293,7 +344,7 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                                         ? name
                                         : '${authState.user?.firstName ?? ''} ${authState.user?.lastName ?? ''}',
                                     style: TextStyle(
-                                      fontSize: 20.sp,
+                                      fontSize: 22.sp,
                                       color: AppColors.color1,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -322,15 +373,17 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
 
                     // Password Field
                     Container(
-                      padding: EdgeInsets.all(3),
+                      height: 55.h,
+                      width: double.infinity,
+                      padding: EdgeInsets.all(3.r),
                       decoration: BoxDecoration(
                         gradient: AppColors.main,
-                        borderRadius: BorderRadius.all(Radius.circular(40)),
+                        borderRadius: BorderRadius.all(Radius.circular(40.r)),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 3,
+                            blurRadius: 3.r,
                             color: Colors.grey.shade400,
-                            offset: Offset(0, 5),
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -366,10 +419,10 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                           builder: (context, ref, _) => GestureDetector(
                             onTap: isLoading ? null : _login,
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 15.w),
+                              padding: EdgeInsets.symmetric(horizontal: 0.w),
                               child: Container(
-                                height: 50.h,
-                                width: 230.w,
+                                height: 55.h,
+                                width: 250.w,
                                 decoration: BoxDecoration(
                                   gradient: AppColors.main,
                                   borderRadius: BorderRadius.all(
@@ -387,7 +440,7 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                                   child: Text(
                                     'ເຂົ້າສູ່ລະບົບ',
                                     style: TextStyle(
-                                      fontSize: 17.sp,
+                                      fontSize: 20.sp,
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.8,
@@ -407,8 +460,8 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                             child: Tooltip(
                               message: 'ເຂົ້າສູ່ລະບົບດ້ວຍລາຍນິ້ວມື ຫຼື Face ID',
                               child: Container(
-                                height: 50.h,
-                                width: 90.w,
+                                height: 55.h,
+                                width: 100.w,
                                 decoration: BoxDecoration(
                                   gradient: AppColors.main,
                                   borderRadius: BorderRadius.all(
@@ -423,7 +476,7 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                                   ],
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(1.w),
+                                  padding: EdgeInsets.all(1.r),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Colors.white,
@@ -458,7 +511,7 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
 
                     // Forgot Password Link
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 25.w),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: GestureDetector(
@@ -468,9 +521,8 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                           child: Text(
                             'ລືມລະຫັດຜ່ານ ?',
                             style: TextStyle(
-                              fontSize: 14.sp,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w400,
-                              color: AppColors.color1,
                             ),
                           ),
                         ),
@@ -494,12 +546,30 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                         _buildQuickActionButton(
                           icon: Icons.sync_alt_outlined,
                           label: 'ໂອນເງິນ',
-                          onTap: () => context.goNamed('transfer'),
+                          onTap: () async {
+                            if (!mounted) return;
+                            final authenticated =
+                                await _authenticateBeforeNavigation(
+                                  targetRoute: 'transfer',
+                                );
+                            if (authenticated && mounted) {
+                              context.pushNamed('transfer');
+                            }
+                          },
                         ),
                         _buildQuickActionButton(
                           icon: Icons.qr_code_scanner,
                           label: 'ສະແກນ',
-                          onTap: () => context.goNamed('scanQR'),
+                          onTap: () async {
+                            if (!mounted) return;
+                            final authenticated =
+                                await _authenticateBeforeNavigation(
+                                  targetRoute: 'scanQR',
+                                );
+                            if (authenticated && mounted) {
+                              context.pushNamed('scanQR');
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -510,12 +580,31 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
                         _buildQuickActionButton(
                           icon: Icons.qr_code,
                           label: 'QR ຕົວເອງ',
-                          onTap: () => context.goNamed('qr'),
+                          onTap: () async {
+                            if (!mounted) return;
+                            final authenticated =
+                                await _authenticateBeforeNavigation(
+                                  targetRoute: 'accountQR',
+                                );
+                            if (authenticated && mounted) {
+                              context.pushNamed('accountQR');
+                            }
+                          },
                         ),
                         _buildQuickActionButton(
                           icon: Icons.grid_view,
                           label: 'ບໍລິການອື່ນໆ',
-                          onTap: () {},
+                          onTap: () async {
+                            if (!mounted) return;
+                            final authenticated =
+                                await _authenticateBeforeNavigation(
+                                  targetRoute: 'services',
+                                );
+                            if (authenticated && mounted) {
+                              // Navigate to services page or show services menu
+                              context.pushNamed('services');
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -585,22 +674,21 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
   }
 
   Widget _buildHeaderIcon({
-    required IconData icon,
+    IconData? icon,
+    Widget? svgIcon,
     required Color color,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 35.w,
-        height: 35.w,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        child: Icon(icon, color: Colors.white, size: 18.sp),
-      ),
+      child: svgIcon != null
+          ? Center(child: svgIcon)
+          : Icon(icon, color: Colors.white, size: 35.sp),
     );
   }
 
   Widget _buildQuickActionButton({
+    Widget? svgIcon,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -612,24 +700,26 @@ class _LoggedInLoginScreenState extends ConsumerState<LoggedInLoginScreen> {
         width: 150.w,
         decoration: BoxDecoration(
           color: AppColors.color1,
-          borderRadius: BorderRadius.circular(15.r),
+          borderRadius: BorderRadius.circular(30.r),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.shade300,
-              blurRadius: 5,
+              blurRadius: 5.r,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 24.sp),
-            SizedBox(height: 5.h),
+            svgIcon != null
+                ? Center(child: svgIcon)
+                : Icon(icon, color: Colors.white, size: 35.sp),
+            SizedBox(width: 10.w),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12.sp,
+                fontSize: 18.sp,
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),

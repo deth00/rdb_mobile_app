@@ -8,7 +8,7 @@ import 'dart:async';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
 import 'package:moblie_banking/features/deposit/transfer/logic/transfer_provider.dart';
-import 'package:moblie_banking/features/deposit/้home/logic/dpt_provider.dart';
+import 'package:moblie_banking/features/deposit/้home/logic/fund_account_provider.dart';
 import 'package:moblie_banking/features/deposit/transfer/presentation/confirm_transfer_money.dart';
 import 'package:moblie_banking/features/home/logic/home_provider.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
@@ -28,6 +28,8 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
   final TextEditingController _detailsController = TextEditingController();
   bool _isInitialized = false;
   bool _isInitializing = false;
+  bool _hasNavigatedAway =
+      false; // Add flag to track if user has navigated away
   TransferState? _previousTransferState;
 
   @override
@@ -35,14 +37,15 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
     super.initState();
     // Use Future.microtask to avoid modifying providers during widget lifecycle
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (mounted && !_hasNavigatedAway) {
         _initializeData();
       }
     });
   }
 
   Future<void> _initializeData() async {
-    if (_isInitializing) return; // Prevent multiple initialization calls
+    if (_isInitializing || _hasNavigatedAway)
+      return; // Prevent multiple initialization calls
 
     try {
       _isInitializing = true;
@@ -53,7 +56,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
 
       // Validate account number from QR scan
       if (widget.acno.isEmpty || widget.acno.trim().isEmpty) {
-        if (mounted) {
+        if (mounted && !_hasNavigatedAway) {
           _showErrorDialog('ເລກບັນຊີບໍ່ຖືກຕ້ອງ', 'ກະລຸນາສະແກນ QR Code ໃໝ່');
         }
         return;
@@ -63,14 +66,14 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
       final cleanAcno = widget.acno.replaceAll(RegExp(r'[^\d]'), '');
 
       if (cleanAcno.length < 8 || cleanAcno.length > 20) {
-        if (mounted) {
+        if (mounted && !_hasNavigatedAway) {
           _showErrorDialog('ເລກບັນຊີບໍ່ຖືກຕ້ອງ', 'ກະລຸນາສະແກນ QR Code ໃໝ່');
         }
         return;
       }
 
       // Load initial data
-      if (!mounted) return;
+      if (!mounted || _hasNavigatedAway) return;
       final state = ref.read(homeNotifierProvider);
 
       try {
@@ -95,7 +98,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
         final transferState = ref.read(transferNotifierProvider);
         if (transferState.receiverAccount == null &&
             transferState.errorMessage != null) {
-          if (mounted) {
+          if (mounted && !_hasNavigatedAway) {
             _showErrorDialog(
               'ບໍ່ພົບເລກບັນຊີ',
               'ກະລຸນາກວດສອບເລກບັນຊີ ຫຼື ສະແກນ QR Code ໃໝ່',
@@ -104,34 +107,34 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
           return;
         }
 
-        // Get deposit account details if available
-        if (state.accountDpt.isNotEmpty && mounted) {
+        // Get fund account details if available
+        if (state.accountDpt.isNotEmpty && mounted && !_hasNavigatedAway) {
           try {
             await ref
-                .read(dptNotifierProvider.notifier)
-                .getAccountDetail(state.accountDpt.first.linkValue)
+                .read(fundAccountNotifierProvider.notifier)
+                .getFundAccountDetail(state.accountDpt.first.linkValue)
                 .timeout(
                   const Duration(seconds: 10),
                   onTimeout: () {
                     throw TimeoutException(
-                      'Deposit account timeout',
+                      'Fund account timeout',
                       const Duration(seconds: 10),
                     );
                   },
                 );
           } catch (e) {
-            // Don't fail the entire initialization if deposit account fails
-            print('Warning: Failed to load deposit account details: $e');
+            // Don't fail the entire initialization if fund account fails
+            print('Warning: Failed to load fund account details: $e');
           }
         }
 
-        if (mounted) {
+        if (mounted && !_hasNavigatedAway) {
           setState(() {
             _isInitialized = true;
           });
         }
       } catch (e) {
-        if (mounted) {
+        if (mounted && !_hasNavigatedAway) {
           if (e is TimeoutException) {
             _showErrorDialog(
               'ເວລາໂຫຼດຂໍ້ມູນຊ້າເກີນໄປ',
@@ -146,7 +149,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
         }
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !_hasNavigatedAway) {
         _showErrorDialog('ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດຂໍ້ມູນ', 'ກະລຸນາລອງໃໝ່ອີກຄັ້ງ');
       }
     } finally {
@@ -158,9 +161,9 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Refresh user limit when screen becomes active - use Future.microtask
-    if (_isInitialized && mounted) {
+    if (_isInitialized && mounted && !_hasNavigatedAway) {
       Future.microtask(() {
-        if (mounted) {
+        if (mounted && !_hasNavigatedAway) {
           ref.read(transferNotifierProvider.notifier).getUserLimit();
         }
       });
@@ -169,24 +172,32 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
 
   @override
   void dispose() {
+    _hasNavigatedAway = true; // Mark as navigated away
     _amountController.dispose();
     _detailsController.dispose();
     super.dispose();
+  }
+
+  void _handleNavigationAway() {
+    if (!_hasNavigatedAway) {
+      setState(() {
+        _hasNavigatedAway = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final fixedSize = size.width + size.height;
-    final acno = ref.watch(dptNotifierProvider);
+    final fundAccountState = ref.watch(fundAccountNotifierProvider);
     final receiverAcno = ref.watch(transferNotifierProvider);
-
     // Handle transfer state changes after build is complete
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _handleTransferStateChanges(receiverAcno, context);
-      }
-    });
+    // SchedulerBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) {
+    //     _handleTransferStateChanges(receiverAcno, context);
+    //   }
+    // });
 
     // Show loading screen if not initialized
     if (!_isInitialized) {
@@ -270,8 +281,11 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
                     icon: AppImage.logoRDB,
                     bankName: 'ທະນາຄານ ພັດທະນາ ຊົນນະບົດ',
                     accountHolder:
-                        'ບັນຊີເງິນຝາກ', // Default account holder name
-                    accountNumber: _maskAccount(acno.accountDetail?.acNo ?? ''),
+                        fundAccountState.fundAccountDetail?.acName ??
+                        '', // Use fund account name
+                    accountNumber: _maskAccount(
+                      fundAccountState.fundAccountDetail?.acNo ?? '',
+                    ),
                   ),
                   SizedBox(height: fixedSize * 0.01),
                   _buildAccountInfo(
@@ -582,6 +596,15 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
           return;
         }
 
+        // Set transfer data before navigation
+        final transferAmount = double.tryParse(_amountController.text) ?? 0.0;
+        final transferDetails = _detailsController.text.trim();
+
+        ref
+            .read(transferNotifierProvider.notifier)
+            .setTransferData(transferAmount, transferDetails);
+
+        _handleNavigationAway();
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -642,49 +665,52 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
         );
   }
 
-  void _handleTransferStateChanges(
-    TransferState currentState,
-    BuildContext context,
-  ) {
-    // Handle limit updates
-    if (_previousTransferState?.userLimit?.transferLimit !=
-        currentState.userLimit?.transferLimit) {
-      if (mounted) {
-        setState(() {});
-      }
-    }
+  // void _handleTransferStateChanges(
+  //   TransferState currentState,
+  //   BuildContext context,
+  // ) {
+  //   // Don't handle state changes if navigated away
+  //   if (_hasNavigatedAway) return;
 
-    // Handle errors - only show if it's a new error
-    if (currentState.errorMessage != null &&
-        currentState.errorMessage != _previousTransferState?.errorMessage) {
-      final isServerError =
-          currentState.errorMessage!.contains('500') ||
-          currentState.errorMessage!.contains('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ');
+  //   // Handle limit updates
+  //   if (_previousTransferState?.userLimit?.transferLimit !=
+  //       currentState.userLimit?.transferLimit) {
+  //     if (mounted && !_hasNavigatedAway) {
+  //       setState(() {});
+  //     }
+  //   }
 
-      // Show snackbar immediately since we're already in post-frame callback
-      if (mounted) {
-        showCustomSnackBar(context, currentState.errorMessage!, isError: true);
-      }
+  //   // Handle errors - only show if it's a new error
+  //   if (currentState.errorMessage != null &&
+  //       currentState.errorMessage != _previousTransferState?.errorMessage) {
+  //     final isServerError =
+  //         currentState.errorMessage!.contains('500') ||
+  //         currentState.errorMessage!.contains('ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ');
 
-      // Show retry dialog for server errors or account not found
-      if (isServerError ||
-          currentState.errorMessage!.contains('ບໍ່ພົບເລກບັນຊີ')) {
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            _showRetryDialog();
-          }
-        });
-      }
+  //     // Show snackbar immediately since we're already in post-frame callback
+  //     if (mounted && !_hasNavigatedAway) {
+  //       showCustomSnackBar(context, currentState.errorMessage!, isError: true);
+  //     }
 
-      // Clear error after showing message
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) {
-          ref.read(transferNotifierProvider.notifier).clearError();
-        }
-      });
-    }
-    _previousTransferState = currentState;
-  }
+  //     // Show retry dialog for server errors or account not found
+  //     if (isServerError ||
+  //         currentState.errorMessage!.contains('ບໍ່ພົບເລກບັນຊີ')) {
+  //       Future.delayed(const Duration(seconds: 2), () {
+  //         if (mounted && !_hasNavigatedAway) {
+  //           _showRetryDialog();
+  //         }
+  //       });
+  //     }
+
+  //     // Clear error after showing message
+  //     Future.delayed(const Duration(seconds: 3), () {
+  //       if (mounted && !_hasNavigatedAway) {
+  //         ref.read(transferNotifierProvider.notifier).clearError();
+  //       }
+  //     });
+  //   }
+  //   _previousTransferState = currentState;
+  // }
 
   void _showRetryDialog() {
     showDialog(
@@ -696,6 +722,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+              _handleNavigationAway();
             },
             child: const Text('ຍົກເລີກ'),
           ),
@@ -703,7 +730,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
             onPressed: () {
               Navigator.of(context).pop();
               // Retry initialization with clean account number
-              if (mounted) {
+              if (mounted && !_hasNavigatedAway) {
                 final cleanAcno = widget.acno.replaceAll(RegExp(r'[^\d]'), '');
                 // Clear state before retry
                 ref.read(transferNotifierProvider.notifier).clearError();
@@ -733,6 +760,7 @@ class _AddTransferMoneyState extends ConsumerState<AddTransferMoney> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
+              _handleNavigationAway();
               // Navigate back to scan QR page
               context.goNamed('scanQR');
             },

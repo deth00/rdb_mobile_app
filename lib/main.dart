@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:moblie_banking/app/app.dart';
+import 'package:moblie_banking/core/utils/secure_storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +14,15 @@ void main() async {
 
   // Initialize Lao locale data
   await initializeDateFormatting('lo');
+
+  // Clear all stored data except preserved keys (_refreshTokenKey, _biometricKey, _name)
+  try {
+    final secureStorage = SecureStorage();
+    await secureStorage.clearAllExceptPreserved();
+  } catch (e) {
+    // If secure storage fails, log the error but don't crash the app
+    print('Failed to clear secure storage on startup: $e');
+  }
 
   // Add error handling for late initialization errors
   // FlutterError.onError = (FlutterErrorDetails details) {
@@ -27,7 +37,7 @@ void main() async {
 
   runApp(
     ScreenUtilInit(
-      designSize: const Size(385, 852),
+      designSize: const Size(430, 932),
       builder: (context, child) => ProviderScope(child: App()),
     ),
   );

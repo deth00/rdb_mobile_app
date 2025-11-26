@@ -1,131 +1,118 @@
-# Notification Feature
+# Notification Detail Feature
 
-This feature provides a comprehensive notification system for the mobile banking app.
+This feature displays detailed information about a specific notification, typically showing transaction details with a clean, organized layout.
+
+## Files
+
+- `notification_detail_screen.dart` - Main screen for displaying notification details
+- `README.md` - This documentation file
 
 ## Features
 
-- **Real-time Notifications**: Display notifications with different types (transaction, security, promotion, system)
-- **Unread Count Badge**: Shows unread notification count in the navigation bar
-- **Mark as Read**: Individual and bulk mark as read functionality
-- **Swipe to Delete**: Swipe left to delete notifications
-- **Pull to Refresh**: Refresh notifications list
-- **Time Formatting**: Smart time display (just now, minutes ago, hours ago, etc.)
-- **Notification Actions**: Handle different notification types with appropriate actions
+- **Date and Time Display**: Prominently shows the notification timestamp
+- **Reference ID**: Displays the transaction reference number
+- **Account Information**: Shows source and destination account details
+- **Transaction Summary**: Displays amount, fees, and description
+- **Visual Design**: Clean, card-based layout with proper spacing
+- **Responsive Design**: Uses `flutter_screenutil` for responsive UI
+- **Lao Language Support**: All text is in Lao language
 
-## File Structure
+## Screen Layout
 
-```
-lib/features/notification/
-├── logic/
-│   ├── notification_state.dart      # State management
-│   ├── notification_notifier.dart   # Business logic
-│   └── notification_provider.dart   # Riverpod providers
-├── presentation/
-│   └── notification_screen.dart     # UI implementation
-└── README.md                        # This file
-```
+### 1. Date and Time Section
+- **Icon**: Clock icon in primary color
+- **Content**: Date and time in large, bold text
+- **Design**: Centered layout with card styling
 
-## Models
+### 2. Reference ID Section
+- **Icon**: Receipt icon
+- **Label**: "ເລກທີອ້າງອີງ" (Reference ID)
+- **Value**: Reference number in monospace font
+- **Design**: Highlighted background with border
 
-### NotificationModel
-- `id`: Unique identifier
-- `title`: Notification title
-- `message`: Notification message
-- `type`: Type of notification (transaction, security, promotion, system)
-- `createdAt`: Timestamp
-- `isRead`: Read status
-- `actionUrl`: Optional action URL
-- `metadata`: Additional data
+### 3. Account Information Section
+- **Title**: "ຂໍ້ມູນບັນຊີ" (Account Information)
+- **Source Account**: 
+  - Logo: BCEL (blue theme)
+  - Label: "ຕົ້ນທາງ" (Source)
+  - Account details with truncated name
+- **Destination Account**:
+  - Logo: RDB (green theme)
+  - Label: "ປາຍທາງ" (Destination)
+  - Full account details
 
-## Usage
+### 4. Transaction Summary Section
+- **Title**: "ສະຫຼຸບການເຄື່ອນໄຫວ" (Transaction Summary)
+- **Amount**: "ຈໍານວນເງິນ" (Amount) - highlighted in green
+- **Fee**: "ຄ່າທໍານຽມ" (Fee) - displayed in grey
+- **Description**: "ລາຍລະອຽດ" (Description) - shows transaction purpose
 
-### Accessing Notifications
+## Design Elements
+
+### Color Scheme
+- **Primary Color**: Uses `AppColors.color1` for icons and highlights
+- **Source Account**: Blue theme (blue.shade50, blue.shade200, blue.shade700)
+- **Destination Account**: Green theme (green.shade50, green.shade200, green.shade700)
+- **Text Colors**: Black87 for headings, grey shades for secondary text
+
+### Typography
+- **Headings**: 18sp, bold weight
+- **Body Text**: 16sp, medium weight
+- **Reference ID**: 18sp, bold, monospace font
+- **Amount**: 18sp, bold, green color
+
+### Layout
+- **Card Design**: Rounded corners (16.r), subtle shadows, borders
+- **Spacing**: Consistent 24.h spacing between sections
+- **Padding**: 20.w internal padding for content
+- **Responsive**: Uses `flutter_screenutil` for adaptive sizing
+
+## Navigation
+
+### Route
 ```dart
-// Watch notification state
-final notificationState = ref.watch(notificationNotifierProvider);
-
-// Access notifications
-final notifications = notificationState.notifications;
-final unreadCount = notificationState.unreadCount;
+// Navigate to notification detail
+context.pushNamed(
+  RouteConstants.notificationDetail,
+  pathParameters: {'id': notificationId},
+);
 ```
 
-### Navigation
+### Route Definition
 ```dart
-// Navigate to notifications screen
-context.goNamed('notifications');
+GoRoute(
+  path: '/notification-detail/:id',
+  name: RouteConstants.notificationDetail,
+  builder: (context, state) {
+    final notificationId = state.pathParameters['id'];
+    return NotificationDetailScreen(notificationId: notificationId);
+  },
+),
 ```
 
-### API Integration
+## Customization
 
-To integrate with real API endpoints, update the following methods in `notification_notifier.dart`:
+### Colors
+- Modify `AppColors.color1` for primary color changes
+- Adjust blue/green shades for account themes
+- Customize text colors for different emphasis levels
 
-1. **Get Notifications**
-```dart
-// Replace mock data with API call
-final response = await _apiService.client.get('notifications');
-final notifications = (response.data as List)
-    .map((json) => NotificationModel.fromJson(json))
-    .toList();
-```
+### Layout
+- Change spacing by modifying `SizedBox` heights
+- Adjust card padding by changing padding values
+- Modify border radius for different corner styles
 
-2. **Mark as Read**
-```dart
-await _apiService.client.put('notifications/$notificationId/read');
-```
-
-3. **Mark All as Read**
-```dart
-await _apiService.client.put('notifications/mark-all-read');
-```
-
-4. **Delete Notification**
-```dart
-await _apiService.client.delete('notifications/$notificationId');
-```
-
-## UI Components
-
-### Notification Tile
-- Color-coded icons based on notification type
-- Unread indicator (red dot)
-- Swipe to delete functionality
-- Tap to mark as read and handle action
-
-### Navigation Badge
-- Shows unread count on notification tab
-- Displays "99+" for counts over 99
-- Updates automatically when notifications change
-
-## Notification Types
-
-1. **Transaction** (Green)
-   - Icon: `Icons.account_balance_wallet`
-   - Action: Navigate to transactions screen
-
-2. **Security** (Red)
-   - Icon: `Icons.security`
-   - Action: Show security alert
-
-3. **Promotion** (Orange)
-   - Icon: `Icons.local_offer`
-   - Action: Navigate to services screen
-
-4. **System** (Blue)
-   - Icon: `Icons.system_update`
-   - Action: Show system message
-
-## Localization
-
-All text is in Lao language:
-- "ການແຈ້ງເຕືອນ" - Notifications
-- "ກຳລັງໂຫຼດການແຈ້ງເຕືອນ..." - Loading notifications...
-- "ບໍ່ມີການແຈ້ງເຕືອນ" - No notifications
-- "ມາກທັງໝົດວ່າອ່ານແລ້ວ" - Mark all as read
+### Content
+- Update hardcoded text for different languages
+- Modify account logos and names
+- Change transaction details as needed
 
 ## Future Enhancements
 
-1. **Push Notifications**: Integrate with Firebase Cloud Messaging
-2. **Notification Preferences**: Allow users to customize notification settings
-3. **Rich Notifications**: Support for images and action buttons
-4. **Notification History**: Pagination for large notification lists
-5. **Offline Support**: Cache notifications for offline viewing 
+- [ ] Dynamic data loading from API
+- [ ] Real-time notification updates
+- [ ] Interactive elements (copy reference ID, share details)
+- [ ] Multiple notification types support
+- [ ] Push notification integration
+- [ ] Notification history
+- [ ] Custom notification preferences 
