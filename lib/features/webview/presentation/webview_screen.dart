@@ -1,191 +1,196 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
+import 'package:moblie_banking/core/utils/app_colors.dart';
 
 class WebViewScreen extends StatefulWidget {
   final String url;
   final String title;
 
-  const WebViewScreen({super.key, required this.url, this.title = 'ເວັບໄຊທ໌'});
+  const WebViewScreen({Key? key, required this.url, this.title = 'ເວັບໄຊທ໌'})
+    : super(key: key);
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
 }
 
 class _WebViewScreenState extends State<WebViewScreen> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-  bool _canGoBack = false;
-  bool _canGoForward = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar based on WebView loading progress
-            if (progress == 100) {
-              setState(() {
-                _isLoading = false;
-              });
-            }
-          },
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-            _updateNavigationState();
-          },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              _isLoading = false;
-            });
-            _showErrorDialog(error.description);
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url));
-  }
-
-  void _updateNavigationState() async {
-    final canGoBack = await _controller.canGoBack();
-    final canGoForward = await _controller.canGoForward();
-
-    if (mounted) {
-      setState(() {
-        _canGoBack = canGoBack;
-        _canGoForward = canGoForward;
-      });
-    }
-  }
-
-  void _showErrorDialog(String error) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('ຂໍ້ຜິດພາດ'),
-          content: Text('ບໍ່ສາມາດໂຫຼດໜ້າໄດ້: $error'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _controller.reload();
-              },
-              child: const Text('ລອງໃໝ່'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('ຍົກເລີກ'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  late InAppWebViewController webViewController;
+  double progress = 0;
+  bool canGoBack = false;
+  bool canGoForward = false;
+  bool isLoading = true;
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: GradientAppBar(
-        title: '',
-        actions: [
-          if (_isLoading)
-            Padding(
-              padding: EdgeInsets.only(right: fixedSize * 0.01),
-              child: SizedBox(
-                width: 20.w,
-                height: 20.w,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Navigation toolbar
-          // Container(
-          //   height: fixedSize * 0.04,
-          //   color: Colors.grey[100],
-          //   child: Row(
-          //     children: [
-          //       IconButton(
-          //         onPressed: _canGoBack ? () => _controller.goBack() : null,
-          //         icon: Icon(
-          //           Icons.arrow_back,
-          //           color: _canGoBack ? AppColors.color1 : Colors.grey,
-          //         ),
-          //       ),
-          //       IconButton(
-          //         onPressed: _canGoForward
-          //             ? () => _controller.goForward()
-          //             : null,
-          //         icon: Icon(
-          //           Icons.arrow_forward,
-          //           color: _canGoForward ? AppColors.color1 : Colors.grey,
-          //         ),
-          //       ),
-          //       IconButton(
-          //         onPressed: () => _controller.reload(),
-          //         icon: Icon(Icons.refresh, color: AppColors.color1),
-          //       ),
-          //       const Spacer(),
-          //       IconButton(
-          //         onPressed: () =>
-          //             _controller.loadRequest(Uri.parse(widget.url)),
-          //         icon: Icon(Icons.home, color: AppColors.color1),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // WebView content
-          Expanded(
-            child: Stack(
-              children: [
-                WebViewWidget(controller: _controller),
-                if (_isLoading)
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.color1,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'ກຳລັງໂຫຼດ...',
-                          style: TextStyle(
-                            color: AppColors.color1,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
+      body: SafeArea(
+        child: InAppWebView(
+          initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+          initialOptions: InAppWebViewGroupOptions(
+            crossPlatform: InAppWebViewOptions(javaScriptEnabled: true),
+            android: AndroidInAppWebViewOptions(useHybridComposition: true),
           ),
-        ],
+          onReceivedServerTrustAuthRequest: (controller, challenge) async {
+            // บังคับให้ bypass SSL error
+            return ServerTrustAuthResponse(
+              action: ServerTrustAuthResponseAction.PROCEED,
+            );
+          },
+          onWebViewCreated: (controller) {
+            webViewController = controller;
+          },
+          // ... callback อื่นๆ
+        ),
       ),
+
+      // appBar: GradientAppBar(
+      //   title: widget.title,
+      //   actions: [
+      //     if (isLoading)
+      //       Padding(
+      //         padding: EdgeInsets.only(right: 16.w),
+      //         child: SizedBox(
+      //           width: 20.w,
+      //           height: 20.w,
+      //           child: CircularProgressIndicator(
+      //             strokeWidth: 2,
+      //             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      //           ),
+      //         ),
+      //       ),
+      //   ],
+      // ),
+      // body: Column(
+      //   children: [
+      //     // Toolbar
+      //     // Container(
+      //     //   height: 48.h,
+      //     //   color: Colors.grey[200],
+      //     //   child: Row(
+      //     //     children: [
+      //     //       IconButton(
+      //     //         onPressed: canGoBack
+      //     //             ? () => webViewController.goBack()
+      //     //             : null,
+      //     //         icon: Icon(
+      //     //           Icons.arrow_back,
+      //     //           color: canGoBack ? AppColors.color1 : Colors.grey,
+      //     //         ),
+      //     //       ),
+      //     //       IconButton(
+      //     //         onPressed: canGoForward
+      //     //             ? () => webViewController.goForward()
+      //     //             : null,
+      //     //         icon: Icon(
+      //     //           Icons.arrow_forward,
+      //     //           color: canGoForward ? AppColors.color1 : Colors.grey,
+      //     //         ),
+      //     //       ),
+      //     //       IconButton(
+      //     //         onPressed: () => webViewController.reload(),
+      //     //         icon: Icon(Icons.refresh, color: AppColors.color1),
+      //     //       ),
+      //     //       const Spacer(),
+      //     //       IconButton(
+      //     //         onPressed: () => webViewController.loadUrl(
+      //     //           urlRequest: URLRequest(url: WebUri(widget.url)),
+      //     //         ),
+      //     //         icon: Icon(Icons.home, color: AppColors.color1),
+      //     //       ),
+      //     //     ],
+      //     //   ),
+      //     // ),
+
+      //     // WebView
+      //     // Expanded(
+      //     //   child: Stack(
+      //     //     children: [
+      //     //       InAppWebView(
+      //     //         initialUrlRequest: URLRequest(url: WebUri(widget.url)),
+      //     //         initialOptions: InAppWebViewGroupOptions(
+      //     //           crossPlatform: InAppWebViewOptions(
+      //     //             javaScriptEnabled: true,
+      //     //             useShouldOverrideUrlLoading: true,
+      //     //             mediaPlaybackRequiresUserGesture: false,
+      //     //           ),
+      //     //           android: AndroidInAppWebViewOptions(
+      //     //             useHybridComposition: true,
+      //     //           ),
+      //     //           ios: IOSInAppWebViewOptions(
+      //     //             allowsInlineMediaPlayback: true,
+      //     //           ),
+      //     //         ),
+      //     //         onWebViewCreated: (controller) {
+      //     //           webViewController = controller;
+      //     //         },
+      //     //         onLoadStart: (controller, url) {
+      //     //           setState(() {
+      //     //             isLoading = true;
+      //     //           });
+      //     //         },
+      //     //         onLoadStop: (controller, url) async {
+      //     //           setState(() {
+      //     //             isLoading = false;
+      //     //           });
+      //     //           // อัพเดตสถานะปุ่มย้อนกลับไปข้างหน้า
+      //     //           bool back = await controller.canGoBack();
+      //     //           bool forward = await controller.canGoForward();
+      //     //           setState(() {
+      //     //             canGoBack = back;
+      //     //             canGoForward = forward;
+      //     //           });
+      //     //         },
+      //     //         onProgressChanged: (controller, progressValue) {
+      //     //           setState(() {
+      //     //             progress = progressValue / 100;
+      //     //           });
+      //     //         },
+      //     //         onReceivedServerTrustAuthRequest:
+      //     //             (controller, challenge) async {
+      //     //               // ยอมรับ SSL ผิดพลาดด้วย (ถ้าต้องการ bypass SSL error)
+      //     //               return ServerTrustAuthResponse(
+      //     //                 action: ServerTrustAuthResponseAction.PROCEED,
+      //     //               );
+      //     //             },
+      //     //         onLoadError: (controller, url, code, message) {
+      //     //           setState(() {
+      //     //             isLoading = false;
+      //     //           });
+      //     //           ScaffoldMessenger.of(context).showSnackBar(
+      //     //             SnackBar(
+      //     //               content: Text('โหลดหน้าเว็บไม่สำเร็จ: $message'),
+      //     //             ),
+      //     //           );
+      //     //         },
+      //     //       ),
+      //     //       if (isLoading)
+      //     //         Center(
+      //     //           child: Column(
+      //     //             mainAxisAlignment: MainAxisAlignment.center,
+      //     //             children: [
+      //     //               CircularProgressIndicator(
+      //     //                 valueColor: AlwaysStoppedAnimation<Color>(
+      //     //                   AppColors.color1,
+      //     //                 ),
+      //     //               ),
+      //     //               const SizedBox(height: 16),
+      //     //               Text(
+      //     //                 'ກຳລັງໂຫຼດ...',
+      //     //                 style: TextStyle(
+      //     //                   color: AppColors.color1,
+      //     //                   fontSize: 16,
+      //     //                 ),
+      //     //               ),
+      //     //             ],
+      //     //           ),
+      //     //         ),
+      //     //     ],
+      //     //   ),
+      //     // ),
+      //   ],
+      // ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/snackbar_helper.dart';
@@ -88,8 +89,6 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     final otpState = ref.watch(otpNotifierProvider);
     // final otpNotifier = ref.read(otpNotifierProvider.notifier);
     // ref.listen<OtpState>(otpNotifierProvider, (prev, next) {
@@ -114,10 +113,7 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
       appBar: GradientAppBar(title: 'ຢືນຢັນ OTP'),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: fixedSize * 0.05,
-            horizontal: fixedSize * 0.01,
-          ),
+          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 15.w),
           child: Column(
             // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,
@@ -125,11 +121,11 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
               Center(
                 child: Text(
                   'ລະຫັດ OTP ໄດ້ຖືກສົ່ງຫາ ${phone} ',
-                  style: TextStyle(fontSize: fixedSize * 0.015),
+                  style: TextStyle(fontSize: 16.sp),
                 ),
               ),
 
-              SizedBox(height: fixedSize * 0.02),
+              SizedBox(height: 20.h),
               PinCodeTextField(
                 appContext: context,
                 length: 6,
@@ -139,9 +135,9 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
                 animationType: AnimationType.fade,
                 pinTheme: PinTheme(
                   shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(8),
-                  fieldHeight: 50,
-                  fieldWidth: 40,
+                  borderRadius: BorderRadius.circular(8.r),
+                  fieldHeight: 50.h,
+                  fieldWidth: 40.w,
                   activeColor: Colors.teal,
                   selectedColor: Colors.teal.shade700,
                   inactiveColor: Colors.grey.shade400,
@@ -208,7 +204,7 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
                 child: Text(
                   'ຕໍ່ໄປ',
                   style: TextStyle(
-                    fontSize: fixedSize * 0.015,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -216,7 +212,7 @@ class _OtpScreenState extends ConsumerState<OtpForgotPW> {
               ),
               backgroundColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
             ),
           ),

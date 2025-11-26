@@ -27,6 +27,7 @@ class FundAccountNotifier extends StateNotifier<FundAccountState> {
             isLoading: false,
             fundAccountDetail: fundAccountDetail,
           );
+          print(fundAccountDetail);
         } else {
           state = state.copyWith(
             isLoading: false,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 
@@ -19,33 +20,27 @@ class ServiceButtom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: fixedSize * 0.002),
+      padding: EdgeInsets.symmetric(vertical: 5.h),
       child: GestureDetector(
         onTap: onpress,
         child: Container(
-          height: fixedSize * 0.07,
+          height: 100.h,
           width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(fixedSize * 0.01),
+            borderRadius: BorderRadius.circular(15.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withOpacity(0.2),
                 spreadRadius: 1,
-                blurRadius: 5,
+                blurRadius: 5.r,
                 offset: const Offset(0, 3), // changes position of shadow
               ),
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.only(
-              top: fixedSize * 0.002,
-              left: fixedSize * 0.005,
-              right: fixedSize * 0.005,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -54,11 +49,15 @@ class ServiceButtom extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(right: fixedSize * 0.01),
+                      padding: EdgeInsets.only(right: 15.w),
                       child: SvgPicture.asset(
                         image,
-                        width: fixedSize * 0.04,
-                        height: fixedSize * 0.04,
+                        width: 50.w,
+                        height: 50.h,
+                        colorFilter: ColorFilter.mode(
+                          AppColors.color1,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -69,7 +68,7 @@ class ServiceButtom extends StatelessWidget {
                           Text(
                             title,
                             style: TextStyle(
-                              fontSize: fixedSize * 0.014,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                               color: Colors.black54,
                             ),
@@ -77,7 +76,7 @@ class ServiceButtom extends StatelessWidget {
                           Text(
                             text,
                             style: TextStyle(
-                              fontSize: fixedSize * 0.010,
+                              fontSize: 14.sp,
                               color: Colors.black54,
                             ),
                             overflow: TextOverflow.ellipsis,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+// import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
@@ -10,7 +10,8 @@ import 'package:moblie_banking/core/models/location_model.dart';
 import 'package:moblie_banking/widgets/appbar.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
-  const MapScreen({super.key});
+  final int pageId;
+  const MapScreen({super.key, required this.pageId});
 
   @override
   ConsumerState<MapScreen> createState() => _MapScreenState();
@@ -38,6 +39,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final locationState = ref.read(locationProvider);
     if (locationState.status == LocationStatus.initial) {
       _loadLocations();
+    }
+
+    // Center on selected location if pageId is provided and location is selected
+    if (widget.pageId > 0 && locationState.selectedLocation != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _centerOnSelectedLocation(locationState.selectedLocation!);
+      });
     }
   }
 
@@ -138,13 +146,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     // Add location markers
     for (final location in state.locations) {
       if (location.latitude != null && location.longitude != null) {
+        // Check if this is the selected location
+        final isSelected = state.selectedLocation?.id == location.id;
+
         _markers.add(
           Marker(
             markerId: MarkerId('location_${location.id}'),
             position: LatLng(location.latitude!, location.longitude!),
             infoWindow: InfoWindow(
               title: location.name,
-              snippet: 'ລະຫັດ: ${location.code}',
+              snippet: isSelected
+                  ? 'ສະຖານທີ່ທີ່ເລືອກ'
+                  : 'ລະຫັດ: ${location.code}',
               onTap: () {
                 ref
                     .read(locationProvider.notifier)
@@ -153,7 +166,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               },
             ),
             icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRed,
+              isSelected ? BitmapDescriptor.hueGreen : BitmapDescriptor.hueRed,
             ),
             onTap: () {
               ref.read(locationProvider.notifier).setSelectedLocation(location);
@@ -179,6 +192,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   }
 
   CameraPosition _getInitialCameraPosition() {
+    // First priority: selected location from location screen
+    final locationState = ref.read(locationProvider);
+    if (locationState.selectedLocation != null &&
+        locationState.selectedLocation!.latitude != null &&
+        locationState.selectedLocation!.longitude != null) {
+      return CameraPosition(
+        target: LatLng(
+          locationState.selectedLocation!.latitude!,
+          locationState.selectedLocation!.longitude!,
+        ),
+        zoom: 15.0,
+      );
+    }
+
+    // Second priority: current user position
     if (_currentPosition != null) {
       return CameraPosition(
         target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
@@ -517,12 +545,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final locationState = ref.watch(locationProvider);
+    final selectedLocation = locationState.selectedLocation;
 
     return Scaffold(
       appBar: GradientAppBar(
-        title: 'ສະຖານທີ່ບໍລິການ',
+        title: selectedLocation != null
+            ? selectedLocation.name
+            : 'ສະຖານທີ່ບໍລິການ',
         icon: Icons.arrow_back,
-        onIconPressed: () => context.pop(),
+        onIconPressed: () => Navigator.of(context).pop(),
       ),
       body: _isLoading
           ? Center(
@@ -533,25 +564,25 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           : _locationError != null
           ? _buildErrorWidget()
           : _buildFullScreenMap(locationState),
-      floatingActionButton: _currentPosition != null
-          ? FloatingActionButton(
-              onPressed: () {
-                if (_mapController != null) {
-                  _mapController!.animateCamera(
-                    CameraUpdate.newLatLngZoom(
-                      LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      ),
-                      15.0,
-                    ),
-                  );
-                }
-              },
-              backgroundColor: AppColors.color1,
-              child: const Icon(Icons.my_location, color: Colors.white),
-            )
-          : null,
+      // floatingActionButton: _currentPosition != null
+      //     ? FloatingActionButton(
+      //         onPressed: () {
+      //           if (_mapController != null) {
+      //             _mapController!.animateCamera(
+      //               CameraUpdate.newLatLngZoom(
+      //                 LatLng(
+      //                   _currentPosition!.latitude,
+      //                   _currentPosition!.longitude,
+      //                 ),
+      //                 15.0,
+      //               ),
+      //             );
+      //           }
+      //         },
+      //         backgroundColor: AppColors.color1,
+      //         child: const Icon(Icons.my_location, color: Colors.white),
+      //       )
+      //     : null,
     );
   }
 
@@ -578,35 +609,35 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  Widget _buildMapErrorWidget() {
-    return Container(
-      color: Colors.grey[100],
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 48),
-            const SizedBox(height: 8),
-            Text(
-              'ບໍ່ສາມາດໂຫຼດແຜນທີ່ໄດ້',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _mapLoadError = false;
-                });
-              },
-              child: const Text('ລອງໃໝ່'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildMapErrorWidget() {
+  //   return Container(
+  //     color: Colors.grey[100],
+  //     child: Center(
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Icon(Icons.error_outline, color: Colors.red, size: 48),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             'ບໍ່ສາມາດໂຫຼດແຜນທີ່ໄດ້',
+  //             style: TextStyle(
+  //               color: Colors.red,
+  //               fontSize: 16,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           const SizedBox(height: 8),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               setState(() {
+  //                 _mapLoadError = false;
+  //               });
+  //             },
+  //             child: const Text('ລອງໃໝ່'),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 }

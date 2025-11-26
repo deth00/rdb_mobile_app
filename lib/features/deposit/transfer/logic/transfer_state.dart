@@ -1,46 +1,55 @@
-import 'package:moblie_banking/core/models/transfer_model.dart';
+import 'package:moblie_banking/core/models/account_model.dart';
 import 'package:moblie_banking/core/models/user_limit_model.dart';
+import 'package:moblie_banking/core/models/transfer_model.dart';
 
 class TransferState {
   final bool isLoading;
-  final bool? status;
   final String? errorMessage;
-  final ReceiverAccount? receiverAccount;
-  final bool isTransferSuccess;
-  final UserLimit? userLimit;
-  final bool isLimitUpdateSuccess;
   final String? successMessage;
+  final ReceiverAccount? receiverAccount;
+  final UserLimit? userLimit;
+  final bool status;
+  final bool isTransferSuccess;
+  final bool isLimitUpdateSuccess;
+  final double? transferAmount;
+  final String? transferDetails;
 
   TransferState({
-    this.status = false,
     this.isLoading = false,
     this.errorMessage,
-    this.receiverAccount,
-    this.isTransferSuccess = false,
-    this.userLimit,
-    this.isLimitUpdateSuccess = false,
     this.successMessage,
+    this.receiverAccount,
+    this.userLimit,
+    this.status = false,
+    this.isTransferSuccess = false,
+    this.isLimitUpdateSuccess = false,
+    this.transferAmount,
+    this.transferDetails,
   });
 
   TransferState copyWith({
-    bool? status,
     bool? isLoading,
     String? errorMessage,
-    ReceiverAccount? receiverAccount,
-    bool? isTransferSuccess,
-    UserLimit? userLimit,
-    bool? isLimitUpdateSuccess,
     String? successMessage,
+    ReceiverAccount? receiverAccount,
+    UserLimit? userLimit,
+    bool? status,
+    bool? isTransferSuccess,
+    bool? isLimitUpdateSuccess,
+    double? transferAmount,
+    String? transferDetails,
   }) {
     return TransferState(
-      status: status ?? this.status,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
-      receiverAccount: receiverAccount ?? this.receiverAccount,
-      isTransferSuccess: isTransferSuccess ?? this.isTransferSuccess,
-      userLimit: userLimit ?? this.userLimit,
-      isLimitUpdateSuccess: isLimitUpdateSuccess ?? this.isLimitUpdateSuccess,
       successMessage: successMessage ?? this.successMessage,
+      receiverAccount: receiverAccount ?? this.receiverAccount,
+      userLimit: userLimit ?? this.userLimit,
+      status: status ?? this.status,
+      isTransferSuccess: isTransferSuccess ?? this.isTransferSuccess,
+      isLimitUpdateSuccess: isLimitUpdateSuccess ?? this.isLimitUpdateSuccess,
+      transferAmount: transferAmount ?? this.transferAmount,
+      transferDetails: transferDetails ?? this.transferDetails,
     );
   }
 }

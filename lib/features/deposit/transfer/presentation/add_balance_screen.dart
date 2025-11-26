@@ -40,8 +40,6 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final fixedSize = size.width + size.height;
     final transferState = ref.watch(transferNotifierProvider);
 
     // Handle state changes
@@ -58,10 +56,10 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 10.h),
-              margin: EdgeInsets.symmetric(horizontal: fixedSize * 0.02),
+              margin: EdgeInsets.symmetric(horizontal: 20.w),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(fixedSize * 0.02),
+                borderRadius: BorderRadius.circular(20.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,47 +67,47 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                   Text(
                     'ລິມິດປັດຈຸບັນ',
                     style: TextStyle(
-                      fontSize: fixedSize * 0.014,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.005),
+                  SizedBox(height: 10.h),
                   Container(
                     height: 50.h,
                     width: double.infinity,
-                    padding: EdgeInsets.all(fixedSize * 0.008),
+                    padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
                       color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                      borderRadius: BorderRadius.circular(15.r),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
                     child: Text(
                       '${_formatCurrency(transferState.userLimit?.transferLimit ?? 0)} LAK',
                       style: TextStyle(
-                        fontSize: fixedSize * 0.016,
+                        fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.color1,
                       ),
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.008),
+                  SizedBox(height: 15.h),
                   // New limit input
                   Text(
                     'ລິມິດໃໝ່',
                     style: TextStyle(
-                      fontSize: fixedSize * 0.014,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.005),
+                  SizedBox(height: 10.h),
                   Container(
                     height: 50.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                      borderRadius: BorderRadius.circular(15.r),
                       border: Border.all(color: Colors.grey[300]!),
                     ),
                     child: TextField(
@@ -118,34 +116,34 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                       decoration: InputDecoration(
                         hintText: 'ປ້ອນຈຳນວນເງິນ',
                         hintStyle: TextStyle(
-                          fontSize: fixedSize * 0.012,
+                          fontSize: 14.sp,
                           color: Colors.grey[400],
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                          borderRadius: BorderRadius.circular(15.r),
                           borderSide: BorderSide(color: Colors.grey[400]!),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                          borderRadius: BorderRadius.circular(15.r),
                           borderSide: BorderSide(color: Colors.grey[400]!),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(fixedSize * 0.01),
+                          borderRadius: BorderRadius.circular(15.r),
                           borderSide: BorderSide(color: AppColors.color1),
                         ),
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: fixedSize * 0.015,
-                          vertical: fixedSize * 0.015,
+                          horizontal: 15.w,
+                          vertical: 15.h,
                         ),
                         suffixText: 'LAK',
                       ),
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.005),
+                  SizedBox(height: 10.h),
                   Text(
                     'ສາມາດເພີ່ມໄດ້ສູງສຸດ ${_formatCurrency(2000000000 - (transferState.userLimit?.transferLimit ?? 0))} LAK',
                     style: TextStyle(
-                      fontSize: fixedSize * 0.009,
+                      fontSize: 12.sp,
                       color: Colors.grey[600],
                       fontStyle: FontStyle.italic,
                     ),
@@ -157,16 +155,16 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
             // Service details
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(fixedSize * 0.02),
-              margin: EdgeInsets.all(fixedSize * 0.02),
+              padding: EdgeInsets.all(20.w),
+              margin: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(fixedSize * 0.02),
+                borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.1),
                     spreadRadius: 1,
-                    blurRadius: 5,
+                    blurRadius: 5.r,
                     offset: const Offset(0, 2),
                   ),
                 ],
@@ -177,29 +175,20 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                   Text(
                     'ລາຍລະອຽດບໍລິການ',
                     style: TextStyle(
-                      fontSize: fixedSize * 0.014,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 15.h),
                   _buildServiceDetail(
                     'ວົງເງິນການໂອນສູງສຸດ/ມື້',
                     '2,000,000,000 LAK',
-                    fixedSize,
                   ),
-                  SizedBox(height: fixedSize * 0.01),
-                  _buildServiceDetail(
-                    'ຄ່າທໍານຽມ/ເດືອນ',
-                    '20,000 LAK',
-                    fixedSize,
-                  ),
-                  SizedBox(height: fixedSize * 0.01),
-                  _buildServiceDetail(
-                    'ໄລຍະເວລາທີ່ນໍາໃຊ້ຂັ້ນຕໍ່າ',
-                    '2 ເດືອນ',
-                    fixedSize,
-                  ),
+                  SizedBox(height: 15.h),
+                  _buildServiceDetail('ຄ່າທໍານຽມ/ເດືອນ', '20,000 LAK'),
+                  SizedBox(height: 15.h),
+                  _buildServiceDetail('ໄລຍະເວລາທີ່ນໍາໃຊ້ຂັ້ນຕໍ່າ', '2 ເດືອນ'),
                 ],
               ),
             ),
@@ -207,11 +196,11 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
             // Terms and conditions
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(fixedSize * 0.02),
-              margin: EdgeInsets.all(fixedSize * 0.02),
+              padding: EdgeInsets.all(20.w),
+              margin: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5DC), // Light beige background
-                borderRadius: BorderRadius.circular(fixedSize * 0.02),
+                borderRadius: BorderRadius.circular(20.r),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,29 +208,25 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                   Text(
                     'ຂໍ້ກຳນົດ ແລະ ເງື່ອນໄຂ',
                     style: TextStyle(
-                      fontSize: fixedSize * 0.014,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: fixedSize * 0.01),
+                  SizedBox(height: 15.h),
                   _buildTermItem(
                     'ວົງເງິນການໂອນເພີ່ມເຕີມ 2,000,000,000 LAK/ມື້',
-                    fixedSize,
                   ),
                   _buildTermItem(
                     'ຄ່າທໍານຽມເພີ່ມລິມິດ 20,000 LAK/ເດືອນ ຈະຖືກຫັກອັດຕະໂນມັດຫຼັງຈາກສະໝັກ ແລະ ເດືອນຕໍ່ໄປຈະຍົກເລີກ',
-                    fixedSize,
                   ),
                   _buildTermItem(
                     'ລູກຄ້າສາມາດຍົກເລີກໄດ້ຫຼັງຈາກໃຊ້ງານຂັ້ນຕໍ່າສຸດ 2 ເດືອນ',
-                    fixedSize,
                   ),
                   _buildTermItem(
                     'ຄ່າທໍານຽມການໂອນຈະຖືກຫັກຕາມປົກກະຕິ ຖ້າຈຳນວນເງິນໂອນສະສົມເກີນ 15,000,000 LAK/ເດືອນ',
-                    fixedSize,
                   ),
-                  SizedBox(height: fixedSize * 0.015),
+                  SizedBox(height: 20.h),
                   Row(
                     children: [
                       GestureDetector(
@@ -251,13 +236,13 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                           });
                         },
                         child: Container(
-                          width: fixedSize * 0.025,
-                          height: fixedSize * 0.025,
+                          width: 30.w,
+                          height: 30.h,
                           decoration: BoxDecoration(
                             color: _acceptedTerms
                                 ? AppColors.color1
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(4.r),
                             border: Border.all(
                               color: _acceptedTerms
                                   ? AppColors.color1
@@ -268,17 +253,17 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
                               ? Icon(
                                   Icons.check,
                                   color: Colors.white,
-                                  size: fixedSize * 0.015,
+                                  size: 20.sp,
                                 )
                               : null,
                         ),
                       ),
-                      SizedBox(width: fixedSize * 0.01),
+                      SizedBox(width: 15.w),
                       Expanded(
                         child: Text(
                           'ຍອມຮັບຂໍ້ກໍານົດ ແລະ ເງື່ອນໄຂ',
                           style: TextStyle(
-                            fontSize: fixedSize * 0.012,
+                            fontSize: 14.sp,
                             color: Colors.black87,
                           ),
                         ),
@@ -291,11 +276,7 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildSubmitButton(
-        context,
-        fixedSize,
-        transferState,
-      ),
+      bottomNavigationBar: _buildSubmitButton(context, transferState),
     );
   }
 
@@ -373,23 +354,20 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     _previousState = currentState;
   }
 
-  Widget _buildServiceDetail(String label, String value, double fixedSize) {
+  Widget _buildServiceDetail(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: fixedSize * 0.011,
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontSize: 14.sp, color: Colors.black87),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: fixedSize * 0.011,
+            fontSize: 14.sp,
             fontWeight: FontWeight.bold,
             color: AppColors.color1,
           ),
@@ -398,26 +376,20 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     );
   }
 
-  Widget _buildTermItem(String text, double fixedSize) {
+  Widget _buildTermItem(String text) {
     return Padding(
-      padding: EdgeInsets.only(bottom: fixedSize * 0.008),
+      padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '• ',
-            style: TextStyle(
-              fontSize: fixedSize * 0.011,
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontSize: 14.sp, color: Colors.black87),
           ),
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: fixedSize * 0.011,
-                color: Colors.black87,
-              ),
+              style: TextStyle(fontSize: 14.sp, color: Colors.black87),
             ),
           ),
         ],
@@ -425,11 +397,7 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
     );
   }
 
-  Widget _buildSubmitButton(
-    BuildContext context,
-    double fixedSize,
-    transferState,
-  ) {
+  Widget _buildSubmitButton(BuildContext context, transferState) {
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     final currentLimit = transferState.userLimit?.transferLimit ?? 0;
     final maxLimit = 2000000000.0; // 2,000,000,000 LAK maximum
@@ -442,33 +410,33 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
         !_isSubmitting;
 
     return Container(
-      padding: EdgeInsets.all(fixedSize * 0.02),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 5,
+            blurRadius: 5.r,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SizedBox(
         width: double.infinity,
-        height: fixedSize * 0.06,
+        height: 60.h,
         child: ElevatedButton(
           onPressed: isValid ? () => _handleSubmit() : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: isValid ? AppColors.color1 : Colors.grey,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(fixedSize * 0.03),
+              borderRadius: BorderRadius.circular(30.r),
             ),
           ),
           child: transferState.isLoading
               ? SizedBox(
-                  width: fixedSize * 0.025,
-                  height: fixedSize * 0.025,
+                  width: 30.w,
+                  height: 30.h,
                   child: const CircularProgressIndicator(
                     color: Colors.white,
                     strokeWidth: 2,
@@ -477,7 +445,7 @@ class _AddBalanceScreenState extends ConsumerState<AddBalanceScreen> {
               : Text(
                   'ສະໝັກເພີ່ມລິມິດ',
                   style: TextStyle(
-                    fontSize: fixedSize * 0.014,
+                    fontSize: 16.sp,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),

@@ -16,6 +16,7 @@ class ScanQRPage extends ConsumerStatefulWidget {
 
 class _ScanQRPageState extends ConsumerState<ScanQRPage> {
   bool isProcessing = false;
+  bool hasNavigated = false; // Add flag to prevent multiple navigations
   String? lastScannedQR;
   MobileScannerController cameraController = MobileScannerController();
 
@@ -26,6 +27,8 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(qrNotifierProvider.notifier).clearError();
+        // Reset navigation flag when entering scan page
+        hasNavigated = false;
       }
     });
   }
@@ -41,7 +44,8 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
     final List<Barcode> barcodes = capture.barcodes;
 
     for (final barcode in barcodes) {
-      if (isProcessing) return;
+      // Prevent processing if already navigating or processing
+      if (isProcessing || hasNavigated) return;
 
       final String? code = barcode.rawValue;
       if (code != null && code.isNotEmpty) {
@@ -54,7 +58,7 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
 
           if (qrState.decodedQRData != null &&
               qrState.decodedQRData!.isNotEmpty) {
-            if (mounted) {
+            if (mounted && !hasNavigated) {
               // Debug logging
               _logQRData(qrState.decodedQRData!);
 
@@ -66,28 +70,36 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
               if (accountNumber != null &&
                   accountNumber.isNotEmpty &&
                   _isValidAccountNumber(accountNumber)) {
-                // Reset processing state before navigation
+                // Set navigation flag to prevent multiple navigations
                 setState(() {
+                  hasNavigated = true;
                   isProcessing = false;
                 });
 
-                // Navigate to transfer page
-                context.pushNamed(
-                  'addTransferMoney',
-                  pathParameters: {'acno': accountNumber},
-                );
+                // Stop camera scanning to prevent further scans
+                await cameraController.stop();
+
+                // Navigate to transfer page using pushReplacement to prevent back navigation
+                if (mounted) {
+                  context.pushReplacementNamed(
+                    'addTransferMoney',
+                    pathParameters: {'acno': accountNumber},
+                  );
+                }
               } else {
-                showCustomSnackBar(
-                  context,
-                  'QR Code ບໍ່ມີຂໍ້ມູນເລກບັນຊີທີ່ຖືກຕ້ອງ',
-                  isError: true,
-                );
+                if (mounted) {
+                  showCustomSnackBar(
+                    context,
+                    'QR Code ບໍ່ມີຂໍ້ມູນເລກບັນຊີທີ່ຖືກຕ້ອງ',
+                    isError: true,
+                  );
+                  // Reset processing state for invalid QR
+                  setState(() {
+                    isProcessing = false;
+                  });
+                }
               }
             }
-            // } else if (qrState.errorMessage != null) {
-            //   if (mounted) {
-            //     showCustomSnackBar(context, qrState.errorMessage!);
-            //   }
           } else {
             if (mounted) {
               showCustomSnackBar(
@@ -95,6 +107,10 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
                 'ບໍ່ສາມາດຖອດລະຫັດ QR Code ໄດ້',
                 isError: true,
               );
+              // Reset processing state for failed decoding
+              setState(() {
+                isProcessing = false;
+              });
             }
           }
         } catch (e) {
@@ -104,9 +120,7 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
               'ເກີດຂໍ້ຜິດພາດໃນການປະມວນຜົນ QR Code: $e',
               isError: true,
             );
-          }
-        } finally {
-          if (mounted) {
+            // Reset processing state for errors
             setState(() {
               isProcessing = false;
             });
@@ -284,188 +298,205 @@ class _ScanQRPageState extends ConsumerState<ScanQRPage> {
     }
   }
 
+  void _cancelScanning() {
+    if (isProcessing || hasNavigated) {
+      setState(() {
+        isProcessing = false;
+        hasNavigated = false;
+      });
+      // Navigate back to home or previous screen
+      if (mounted) {
+        context.pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final qrState = ref.watch(qrNotifierProvider);
 
-    // Listen for QR state changes
-    // ref.listen<QRState>(qrNotifierProvider, (previous, next) {
-    //   // Handle successful QR decoding
-    //   if (previous?.decodedQRData != next.decodedQRData &&
-    //       next.decodedQRData != null) {
-    //     if (mounted && isProcessing) {
-    //       final accountNumber = _extractAccountNumber(next.decodedQRData!);
-
-    //       if (accountNumber != null &&
-    //           accountNumber.isNotEmpty &&
-    //           _isValidAccountNumber(accountNumber)) {
-    //         setState(() {
-    //           isProcessing = false;
-    //         });
-
-    //         context.pushNamed(
-    //           'addTransferMoney',
-    //           pathParameters: {'acno': accountNumber},
-    //         );
-    //       } else {
-    //         setState(() {
-    //           isProcessing = false;
-    //         });
-    //         showCustomSnackBar(
-    //           context,
-    //           'QR Code ບໍ່ມີຂໍ້ມູນເລກບັນຊີທີ່ຖືກຕ້ອງ',
-    //         );
-    //       }
-    //     }
-    //   }
-
-    //   // Handle errors
-    //   if (previous?.errorMessage != next.errorMessage &&
-    //       next.errorMessage != null) {
-    //     if (mounted && isProcessing) {
-    //       setState(() {
-    //         isProcessing = false;
-    //       });
-    //       showCustomSnackBar(context, next.errorMessage!);
-    //     }
-    //   }
-    // });
-
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        centerTitle: true,
-        title: const Text(
-          'ສະແກນ QR Code',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(gradient: AppColors.main),
-        ),
-        actions: [
-          IconButton(
-            icon: ValueListenableBuilder(
-              valueListenable: cameraController.torchState,
-              builder: (context, state, child) {
-                switch (state) {
-                  case TorchState.off:
-                    return const Icon(Icons.flash_off, color: Colors.grey);
-                  case TorchState.on:
-                    return const Icon(Icons.flash_on, color: Colors.yellow);
-                }
-              },
-            ),
-            onPressed: () => cameraController.toggleTorch(),
+    return WillPopScope(
+      onWillPop: () async {
+        // If already navigating, prevent going back to avoid multiple instances
+        if (hasNavigated) {
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: const Text(
+            'ສະແກນ QR Code',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          IconButton(
-            icon: ValueListenableBuilder(
-              valueListenable: cameraController.cameraFacingState,
-              builder: (context, state, child) {
-                switch (state) {
-                  case CameraFacing.front:
-                    return const Icon(Icons.camera_front);
-                  case CameraFacing.back:
-                    return const Icon(Icons.camera_rear);
-                }
-              },
-            ),
-            onPressed: () => cameraController.switchCamera(),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(gradient: AppColors.main),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Stack(
-              children: [
-                MobileScanner(
-                  controller: cameraController,
-                  onDetect: _onDetect,
-                ),
-                // Overlay for scanning area
-                Center(
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.green, width: 3),
-                      borderRadius: BorderRadius.circular(15),
+          leading: (isProcessing || hasNavigated)
+              ? IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: _cancelScanning,
+                )
+              : null,
+          actions: [
+            IconButton(
+              icon: ValueListenableBuilder(
+                valueListenable: cameraController.torchState,
+                builder: (context, state, child) {
+                  switch (state) {
+                    case TorchState.off:
+                      return const Icon(Icons.flash_off, color: Colors.grey);
+                    case TorchState.on:
+                      return const Icon(Icons.flash_on, color: Colors.yellow);
+                  }
+                },
+              ),
+              onPressed: (isProcessing || hasNavigated)
+                  ? null
+                  : () => cameraController.toggleTorch(),
+            ),
+            IconButton(
+              icon: ValueListenableBuilder(
+                valueListenable: cameraController.cameraFacingState,
+                builder: (context, state, child) {
+                  switch (state) {
+                    case CameraFacing.front:
+                      return const Icon(Icons.camera_front);
+                    case CameraFacing.back:
+                      return const Icon(Icons.camera_rear);
+                  }
+                },
+              ),
+              onPressed: (isProcessing || hasNavigated)
+                  ? null
+                  : () => cameraController.switchCamera(),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Stack(
+                children: [
+                  MobileScanner(
+                    controller: cameraController,
+                    onDetect: _onDetect,
+                  ),
+                  // Overlay for scanning area
+                  Center(
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: (isProcessing || hasNavigated)
+                              ? Colors.grey
+                              : Colors.green,
+                          width: 3,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                   ),
-                ),
-                // Loading overlay
-                if (isProcessing || qrState.isLoading)
+                  // Loading overlay
+                  if (isProcessing || hasNavigated || qrState.isLoading)
+                    Container(
+                      color: Colors.black54,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              hasNavigated
+                                  ? 'ກຳລັງເປີດໜ້າຕ່າງໂອນເງິນ...'
+                                  : 'ກຳລັງປະມວນຜົນ QR Code...',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (hasNavigated) ...[
+                              const SizedBox(height: 8),
+                              const Text(
+                                'ກະລຸນາລໍຖ້າ',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
                   Container(
-                    color: Colors.black54,
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: (isProcessing || hasNavigated)
+                            ? Colors.grey
+                            : Colors.green,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      hasNavigated
+                          ? 'ກຳລັງເປີດໜ້າຕ່າງໂອນເງິນ...'
+                          : 'ຈັດ QR Code ໃຫ້ຢູ່ໃນກອບສີຂຽວເພື່ອສະແກນ',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: (isProcessing || hasNavigated)
+                            ? Colors.grey
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Show processing status
+                  if (isProcessing || hasNavigated)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        border: Border.all(color: Colors.blue.shade200),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
                         children: [
-                          CircularProgressIndicator(color: Colors.white),
-                          SizedBox(height: 16),
-                          Text(
-                            'ກຳລັງປະມວນຜົນ QR Code...',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          Icon(Icons.info_outline, color: Colors.blue.shade600),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              hasNavigated
+                                  ? 'ກຳລັງເປີດໜ້າຕ່າງໂອນເງິນ ກະລຸນາລໍຖ້າ'
+                                  : 'ກຳລັງປະມວນຜົນ QR Code ກະລຸນາລໍຖ້າ',
+                              style: TextStyle(color: Colors.blue.shade700),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'ຈັດ QR Code ໃຫ້ຢູ່ໃນກອບສີຂຽວເພື່ອສະແກນ',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // if (qrState.errorMessage != null)
-                //   Container(
-                //     padding: const EdgeInsets.all(12),
-                //     decoration: BoxDecoration(
-                //       color: Colors.red.shade50,
-                //       border: Border.all(color: Colors.red.shade200),
-                //       borderRadius: BorderRadius.circular(8),
-                //     ),
-                //     child: Row(
-                //       children: [
-                //         Icon(Icons.error_outline, color: Colors.red.shade600),
-                //         const SizedBox(width: 8),
-                //         Expanded(
-                //           child: Text(
-                //             qrState.errorMessage!,
-                //             style: TextStyle(color: Colors.red.shade700),
-                //           ),
-                //         ),
-                //         TextButton(
-                //           onPressed: () {
-                //             ref.read(qrNotifierProvider.notifier).clearError();
-                //             setState(() {
-                //               isProcessing = false;
-                //             });
-                //           },
-                //           child: const Text('ລອງໃໝ່'),
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

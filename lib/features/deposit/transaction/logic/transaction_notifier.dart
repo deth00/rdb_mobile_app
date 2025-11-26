@@ -15,16 +15,14 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     if (state.isLoading || !state.hasMoreData) return;
 
     state = state.copyWith(isLoading: true, error: null);
-
     try {
       final response = await dioClient.client.get(
         'v1/act/getAccountStatementCore/',
         queryParameters: {
-          'acno': acno ?? '0201010000205444001', // Default account number
+          'acno': acno ?? '', // Default account number
           'offset': state.offset,
         },
       );
-
       if (response.statusCode == 200) {
         final data = response.data['data'] as List;
         final newTransactions = data
@@ -47,10 +45,24 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         );
       }
     } on DioError catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}',
-      );
+      final statusCode = e.response?.statusCode;
+      String errorMessage;
+
+      switch (statusCode) {
+        case 500:
+          errorMessage = 'ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ';
+          break;
+        case 404:
+          errorMessage = 'ບໍ່ພົບຂໍ້ມູນການເຄື່ອນໄຫວ';
+          break;
+        case 401:
+          errorMessage = 'ການຢືນຢັນລົ້ມເຫລວ. ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່';
+          break;
+        default:
+          errorMessage = 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}';
+      }
+
+      state = state.copyWith(isLoading: false, error: errorMessage);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'ເກີດຂໍ້ຜິດພາດ: $e');
     }
@@ -68,7 +80,7 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     try {
       final response = await dioClient.client.get(
         'v1/act/getAccountStatementCore/',
-        queryParameters: {'acno': acno ?? '0201010000205444001', 'offset': 0},
+        queryParameters: {'acno': acno ?? '', 'offset': 0},
       );
 
       if (response.statusCode == 200) {
@@ -92,10 +104,24 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
         );
       }
     } on DioError catch (e) {
-      state = state.copyWith(
-        isRefreshing: false,
-        error: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}',
-      );
+      final statusCode = e.response?.statusCode;
+      String errorMessage;
+
+      switch (statusCode) {
+        case 500:
+          errorMessage = 'ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ';
+          break;
+        case 404:
+          errorMessage = 'ບໍ່ພົບຂໍ້ມູນການເຄື່ອນໄຫວ';
+          break;
+        case 401:
+          errorMessage = 'ການຢືນຢັນລົ້ມເຫລວ. ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່';
+          break;
+        default:
+          errorMessage = 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${e.message}';
+      }
+
+      state = state.copyWith(isRefreshing: false, error: errorMessage);
     } catch (e) {
       state = state.copyWith(isRefreshing: false, error: 'ເກີດຂໍ້ຜິດພາດ: $e');
     }
@@ -107,5 +133,14 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  void clearTransactions() {
+    state = state.copyWith(
+      transactions: [],
+      offset: 0,
+      hasMoreData: true,
+      error: null,
+    );
   }
 }

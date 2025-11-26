@@ -27,8 +27,6 @@ class NavigatorItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     final current = ref.watch(navIndexProvider);
     final _sectectIndex = current == index;
     final notificationState = ref.watch(notificationNotifierProvider);
@@ -39,7 +37,7 @@ class NavigatorItem extends ConsumerWidget {
           context.go(tabs[index]); // ⬅️ เปลี่ยนหน้า
         },
         child: Container(
-          height: fixedSize * 0.055,
+          height: 80.h,
           width: MediaQuery.of(context).size.width / 4,
           decoration: _sectectIndex
               ? const BoxDecoration(color: Colors.white)
@@ -50,16 +48,14 @@ class NavigatorItem extends ConsumerWidget {
             children: [
               alert
                   ? Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: fixedSize * 0.0025,
-                      ),
+                      padding: EdgeInsets.symmetric(vertical: 5.h),
                       child: SizedBox(
-                        width: fixedSize * 0.025,
-                        height: fixedSize * 0.025,
+                        width: 35.w,
+                        height: 35.h,
                         child: SvgPicture.asset(
                           image!,
-                          height: fixedSize * 0.03,
-                          width: fixedSize * 0.03,
+                          height: 35.h,
+                          width: 35.w,
                           color: _sectectIndex
                               ? AppColors.color2
                               : Colors.white,
@@ -70,7 +66,7 @@ class NavigatorItem extends ConsumerWidget {
                       children: [
                         Icon(
                           icons,
-                          size: fixedSize * 0.03,
+                          size: 44.sp,
                           color: _sectectIndex
                               ? AppColors.color2
                               : Colors.white,
@@ -80,14 +76,14 @@ class NavigatorItem extends ConsumerWidget {
                             right: 0,
                             top: 0,
                             child: Container(
-                              padding: EdgeInsets.all(2),
+                              padding: EdgeInsets.all(4.w),
                               decoration: BoxDecoration(
                                 color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(10.r),
                               ),
                               constraints: BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
+                                minWidth: 16.w,
+                                minHeight: 16.h,
                               ),
                               child: Text(
                                 notificationState.unreadCount > 99
@@ -95,7 +91,7 @@ class NavigatorItem extends ConsumerWidget {
                                     : notificationState.unreadCount.toString(),
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 10,
+                                  fontSize: 14.sp,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
@@ -108,8 +104,8 @@ class NavigatorItem extends ConsumerWidget {
                 title,
                 style: TextStyle(
                   color: _sectectIndex ? AppColors.color2 : Colors.white,
-                  fontSize: fixedSize * 0.01,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 14.sp,
+                  // fontWeight: FontWeight.bold,
                 ),
               ),
             ],

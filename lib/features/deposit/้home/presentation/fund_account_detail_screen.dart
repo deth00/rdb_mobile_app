@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/core/utils/app_image.dart';
@@ -38,8 +39,6 @@ class _FundAccountDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     final fundAccountState = ref.watch(fundAccountNotifierProvider);
 
     return Scaffold(
@@ -52,14 +51,14 @@ class _FundAccountDetailScreenState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, color: Colors.red, size: 64),
-                    SizedBox(height: fixedSize * 0.01),
+                    Icon(Icons.error_outline, color: Colors.red, size: 64.sp),
+                    SizedBox(height: 20.h),
                     Text(
                       fundAccountState.errorMessage!,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(color: Colors.red, fontSize: 16.sp),
                     ),
-                    SizedBox(height: fixedSize * 0.01),
+                    SizedBox(height: 20.h),
                     ElevatedButton(
                       onPressed: () {
                         ref
@@ -69,50 +68,50 @@ class _FundAccountDetailScreenState
                             .read(fundAccountNotifierProvider.notifier)
                             .getFundAccountDetail(widget.acno);
                       },
-                      child: Text('ລອງໃໝ່'),
+                      child: Text('ລອງໃໝ່', style: TextStyle(fontSize: 16.sp)),
                     ),
                   ],
                 ),
               )
             : fundAccountState.fundAccountDetail != null
             ? SingleChildScrollView(
-                padding: EdgeInsets.all(fixedSize * 0.02),
+                padding: EdgeInsets.all(20.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAccountCard(
-                      fundAccountState.fundAccountDetail!,
-                      fixedSize,
-                    ),
-                    SizedBox(height: fixedSize * 0.02),
-                    _buildDetailsCard(
-                      fundAccountState.fundAccountDetail!,
-                      fixedSize,
-                    ),
-                    SizedBox(height: fixedSize * 0.02),
-                    _buildContactCard(
-                      fundAccountState.fundAccountDetail!,
-                      fixedSize,
-                    ),
+                    _buildAccountCard(fundAccountState.fundAccountDetail!),
+                    SizedBox(height: 20.h),
+                    _buildDetailsCard(fundAccountState.fundAccountDetail!),
+                    SizedBox(height: 20.h),
+                    _buildContactCard(fundAccountState.fundAccountDetail!),
                   ],
                 ),
               )
-            : Center(child: Text('ບໍ່ມີຂໍ້ມູນບັນຊີ')),
+            : Center(
+                child: Text(
+                  'ບໍ່ມີຂໍ້ມູນບັນຊີ',
+                  style: TextStyle(fontSize: 16.sp),
+                ),
+              ),
       ),
     );
   }
 
-  Widget _buildAccountCard(dynamic fundAccount, double fixedSize) {
+  Widget _buildAccountCard(dynamic fundAccount) {
     final currencyFormat = NumberFormat.currency(locale: 'lo_LA', symbol: '₭');
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(fixedSize * 0.02),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: AppColors.main,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8.r,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -122,20 +121,20 @@ class _FundAccountDetailScreenState
             'ບັນຊີເງິນຝາກ',
             style: TextStyle(
               color: Colors.white,
-              fontSize: fixedSize * 0.018,
+              fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: fixedSize * 0.01),
+          SizedBox(height: 15.h),
           Text(
             fundAccount.acName,
             style: TextStyle(
               color: Colors.white,
-              fontSize: fixedSize * 0.016,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: fixedSize * 0.005),
+          SizedBox(height: 10.h),
           // 🔒 ເລກບັນຊີ with show/hide functionality
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,7 +143,7 @@ class _FundAccountDetailScreenState
                 isVisible ? fundAccount.acNo : _maskAccount(fundAccount.acNo),
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: fixedSize * 0.014,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -155,11 +154,11 @@ class _FundAccountDetailScreenState
                   });
                 },
                 child: Container(
-                  height: fixedSize * 0.02,
-                  width: fixedSize * 0.05,
+                  height: 30.h,
+                  width: 60.w,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(fixedSize * 0.007),
+                    borderRadius: BorderRadius.circular(10.r),
                     border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
                   child: Center(
@@ -168,7 +167,7 @@ class _FundAccountDetailScreenState
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: fixedSize * 0.012,
+                        fontSize: 14.sp,
                       ),
                     ),
                   ),
@@ -176,7 +175,7 @@ class _FundAccountDetailScreenState
               ),
             ],
           ),
-          SizedBox(height: fixedSize * 0.015),
+          SizedBox(height: 20.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -185,26 +184,18 @@ class _FundAccountDetailScreenState
                 children: [
                   Text(
                     'ຍອດເງິນ',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: fixedSize * 0.013,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                   ),
                   Row(
                     children: [
-                      // Image.asset(
-                      //   AppImage.kip,
-                      //   scale: fixedSize * 0.03,
-                      //   color: Colors.white,
-                      // ),
-                      SizedBox(width: fixedSize * 0.005),
+                      SizedBox(width: 5.w),
                       Text(
                         isVisible
                             ? currencyFormat.format(fundAccount.balance)
                             : 'xxxxx',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: fixedSize * 0.020,
+                          fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -217,27 +208,19 @@ class _FundAccountDetailScreenState
                 children: [
                   Text(
                     'ດອກເບ້ຍ',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: fixedSize * 0.013,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14.sp),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Image.asset(
-                      //   AppImage.kip,
-                      //   scale: fixedSize * 0.03,
-                      //   color: Colors.white,
-                      // ),
-                      SizedBox(width: fixedSize * 0.005),
+                      SizedBox(width: 5.w),
                       Text(
                         isVisible
                             ? currencyFormat.format(fundAccount.intpbl)
                             : 'xxxxx',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: fixedSize * 0.016,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -252,15 +235,19 @@ class _FundAccountDetailScreenState
     );
   }
 
-  Widget _buildDetailsCard(dynamic fundAccount, double fixedSize) {
+  Widget _buildDetailsCard(dynamic fundAccount) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(fixedSize * 0.02),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8.r,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -268,33 +255,30 @@ class _FundAccountDetailScreenState
         children: [
           Text(
             'ລາຍລະອຽດບັນຊີ',
-            style: TextStyle(
-              fontSize: fixedSize * 0.018,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: fixedSize * 0.015),
-          _buildDetailRow('ປະເພດບັນຊີ', fundAccount.catname, fixedSize),
-          SizedBox(height: fixedSize * 0.01),
-          _buildDetailRow(
-            'ຍອດເງິນຕ່ຳສຸດ',
-            '${fundAccount.minAmt} ₭',
-            fixedSize,
-          ),
+          SizedBox(height: 20.h),
+          _buildDetailRow('ປະເພດບັນຊີ', fundAccount.catname),
+          SizedBox(height: 15.h),
+          _buildDetailRow('ຍອດເງິນຕ່ຳສຸດ', '${fundAccount.minAmt} ₭'),
         ],
       ),
     );
   }
 
-  Widget _buildContactCard(dynamic fundAccount, double fixedSize) {
+  Widget _buildContactCard(dynamic fundAccount) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(fixedSize * 0.02),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8.r,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -302,48 +286,37 @@ class _FundAccountDetailScreenState
         children: [
           Text(
             'ຂໍ້ມູນຕິດຕໍ່',
-            style: TextStyle(
-              fontSize: fixedSize * 0.018,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: fixedSize * 0.015),
+          SizedBox(height: 20.h),
           if (fundAccount.mphone.hp.isNotEmpty)
-            _buildDetailRow('ເບີໂທລະສັບ', fundAccount.mphone.hp, fixedSize),
-          if (fundAccount.mphone.hp.isNotEmpty)
-            SizedBox(height: fixedSize * 0.01),
+            _buildDetailRow('ເບີໂທລະສັບ', fundAccount.mphone.hp),
+          if (fundAccount.mphone.hp.isNotEmpty) SizedBox(height: 15.h),
           if (fundAccount.mphone.fp.isNotEmpty)
-            _buildDetailRow('ເບີແຟັກ', fundAccount.mphone.fp, fixedSize),
-          if (fundAccount.mphone.fp.isNotEmpty)
-            SizedBox(height: fixedSize * 0.01),
+            _buildDetailRow('ເບີແຟັກ', fundAccount.mphone.fp),
+          if (fundAccount.mphone.fp.isNotEmpty) SizedBox(height: 15.h),
           if (fundAccount.mphone.cp.isNotEmpty)
-            _buildDetailRow('ເບີມືຖື', fundAccount.mphone.cp, fixedSize),
+            _buildDetailRow('ເບີມືຖື', fundAccount.mphone.cp),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, double fixedSize) {
+  Widget _buildDetailRow(String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: fixedSize * 0.08,
+          width: 100.w,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: fixedSize * 0.014,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: fixedSize * 0.014,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
           ),
         ),
       ],

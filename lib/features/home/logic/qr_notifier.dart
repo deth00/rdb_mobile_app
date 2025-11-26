@@ -24,6 +24,9 @@ class QRNotifier extends StateNotifier<QRState> {
       case 404:
         errorMessage = 'ບໍ່ພົບຂໍ້ມູນ QR Code';
         break;
+      case 409:
+        errorMessage = 'ເລກບັນຊີບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີສິດໃນການສ້າງ QR Code';
+        break;
       case 500:
         errorMessage = 'ເກີດຂໍ້ຜິດພາດທາງເຊີເວີ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ';
         break;
@@ -73,7 +76,6 @@ class QRNotifier extends StateNotifier<QRState> {
         'generate_qr_nbb_static',
         data: {'acno': accountNumber},
       );
-
       if (response.statusCode == 201) {
         final qrResponse = QRResponse.fromJson(response.data);
         state = state.copyWith(isLoading: false, qrResponse: qrResponse);
@@ -85,6 +87,7 @@ class QRNotifier extends StateNotifier<QRState> {
         );
       }
     } on DioException catch (e) {
+      print('error ========================= ${e.response?.data}');
       _handleError(e, 'generateQR');
     } catch (e) {
       _handleGeneralError(e);

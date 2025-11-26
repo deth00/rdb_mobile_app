@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/features/auth/logic/auth_provider.dart';
 import 'package:moblie_banking/features/account/logic/profile_provider.dart';
@@ -302,17 +304,23 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         ],
       ),
       floatingActionButton: SizedBox(
-        width: double.infinity,
+        width: 250.w,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           child: Container(
-            decoration: BoxDecoration(gradient: AppColors.main),
+            decoration: BoxDecoration(
+              gradient: AppColors.main,
+              borderRadius: BorderRadius.all(Radius.circular(20.r)),
+            ),
             child: FloatingActionButton.extended(
               onPressed: () async {
                 if (profileState.selectedImage != null) {
                   await ref
                       .read(profileNotifierProvider.notifier)
                       .uploadProfileImage();
+                  if (profileState.successMessage != null) {
+                    context.pushNamed('home');
+                  }
                 }
               },
               label: Center(

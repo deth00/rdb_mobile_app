@@ -19,13 +19,8 @@ class cardDeposit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: fixedSize * 0.002,
-        horizontal: fixedSize * 0.002,
-      ),
+      padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 5.w),
       child: GestureDetector(
         onTap: () {
           if (pathParameters != null) {
@@ -39,13 +34,13 @@ class cardDeposit extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              SvgPicture.asset(image, width: 70.w),
+              SvgPicture.asset(image, width: 80.w),
               Text(
                 text,
                 style: TextStyle(
-                  fontSize: fixedSize * 0.012,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16.sp,
+                  color: Colors.black,
+                  // fontWeight: FontWeight.bold,
                 ),
               ),
             ],

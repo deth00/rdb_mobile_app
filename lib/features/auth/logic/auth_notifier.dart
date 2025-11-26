@@ -32,6 +32,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await storage.saveName(user.firstName);
         // Save phone number for biometric authentication
         await storage.savePhone(phone);
+        // Save password for future authentication
+        await storage.savePassword(password);
         // Save userAgent for refresh token requests
         await storage.saveUserAgent(userAgent);
 

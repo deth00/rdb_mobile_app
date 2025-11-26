@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moblie_banking/core/utils/app_colors.dart';
 import 'package:moblie_banking/features/location/logic/location_provider.dart';
@@ -24,8 +25,6 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double fixedSize = size.width + size.height;
     final locationState = ref.watch(locationProvider);
 
     return Scaffold(
@@ -36,14 +35,14 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(fixedSize * 0.01),
-          child: _buildContent(locationState, fixedSize),
+          padding: EdgeInsets.all(15.w),
+          child: _buildContent(locationState, 15.w),
         ),
       ),
     );
   }
 
-  Widget _buildContent(LocationState state, double fixedSize) {
+  Widget _buildContent(LocationState state, double width) {
     switch (state.status) {
       case LocationStatus.initial:
       case LocationStatus.loading:
@@ -58,23 +57,23 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 60),
-              SizedBox(height: 16),
+              Icon(Icons.error_outline, color: Colors.red, size: 60.sp),
+              SizedBox(height: 16.h),
               Text(
                 'ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດຂໍ້ມູນ',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.red,
                 ),
               ),
-              SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 state.errorMessage ?? 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນສະຖານທີ່ບໍລິການໄດ້',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton(
                 onPressed: () {
                   ref.read(locationProvider.notifier).fetchLocations();
@@ -95,12 +94,12 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.location_off, color: Colors.grey, size: 60),
-                SizedBox(height: 16),
+                Icon(Icons.location_off, color: Colors.grey, size: 60.sp),
+                SizedBox(height: 16.h),
                 Text(
                   'ບໍ່ມີຂໍ້ມູນສະຖານທີ່ບໍລິການ',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey[600],
                   ),
@@ -114,13 +113,13 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
           itemCount: state.locations.length,
           itemBuilder: (context, index) {
             final location = state.locations[index];
-            return _buildLocationCard(location, fixedSize);
+            return _buildLocationCard(location, 15.w);
           },
         );
     }
   }
 
-  Widget _buildLocationCard(location, double fixedSize) {
+  Widget _buildLocationCard(location, double width) {
     final selectedLocation = ref.watch(locationProvider).selectedLocation;
     final isSelected =
         selectedLocation != null && selectedLocation.id == location.id;
@@ -128,10 +127,10 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
         location.latitude != null && location.longitude != null;
 
     return Container(
-      margin: EdgeInsets.only(bottom: fixedSize * 0.01),
+      margin: EdgeInsets.only(bottom: 20.h),
       decoration: BoxDecoration(
         color: isSelected ? AppColors.color1.withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isSelected
               ? AppColors.color1
@@ -142,135 +141,143 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 4,
+            blurRadius: 4.r,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: EdgeInsets.all(fixedSize * 0.015),
+        contentPadding: EdgeInsets.all(15.w),
         leading: Container(
-          width: 50,
-          height: 50,
+          width: 50.w,
+          height: 50.h,
           decoration: BoxDecoration(
             color: hasCoordinates
                 ? AppColors.color1.withOpacity(0.1)
                 : Colors.grey.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(25.r),
           ),
           child: Icon(
             hasCoordinates ? Icons.location_on : Icons.location_off,
             color: hasCoordinates ? AppColors.color1 : Colors.grey,
-            size: 24,
+            size: 24.sp,
           ),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                location.name,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? AppColors.color1 : Colors.black87,
-                ),
-              ),
-            ),
-            if (hasCoordinates) ...[
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.color1.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'ມີພິກັດ',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.color1,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ] else ...[
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'ບໍ່ມີພິກັດ',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        subtitle: Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 4),
             Text(
-              'ລະຫັດ: ${location.code}',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              location.name,
+              style: TextStyle(
+                fontSize: 18.sp,
+                // fontWeight: FontWeight.bold,
+                color: isSelected ? AppColors.color1 : Colors.black,
+              ),
             ),
-            if (hasCoordinates) ...[
-              SizedBox(height: 4),
-              Text(
-                'ພິກັດ: ${location.latitude!.toStringAsFixed(6)}, ${location.longitude!.toStringAsFixed(6)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.color1,
-                  fontWeight: FontWeight.bold,
-                ),
+            SizedBox(height: 5.h),
+            Text(
+              'ທີ່ຕັ້ງຂອງສາຂາ ແລະ ໜ່ວຍບໍລິການທີ່ຂຶ້ນກັບ',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: isSelected ? AppColors.color1 : Colors.black54,
               ),
-            ] else ...[
-              SizedBox(height: 4),
-              Text(
-                'ບໍ່ມີຂໍ້ມູນພິກັດ',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
+            ),
+
+            // if (hasCoordinates) ...[
+            //   Container(
+            //     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            //     decoration: BoxDecoration(
+            //       color: AppColors.color1.withOpacity(0.1),
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //     child: Text(
+            //       'ມີພິກັດ',
+            //       style: TextStyle(
+            //         fontSize: 10.sp,
+            //         color: AppColors.color1,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+            //   ),
+            // ] else ...[
+            //   Container(
+            //     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey.withOpacity(0.1),
+            //       borderRadius: BorderRadius.circular(12),
+            //     ),
+            //     child: Text(
+            //       'ບໍ່ມີພິກັດ',
+            //       style: TextStyle(
+            //         fontSize: 10.sp,
+            //         color: Colors.grey[600],
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //     ),
+            //   ),
+            // ],
           ],
         ),
+        // subtitle: Column(
+        //   crossAxisAlignment: CrossAxisAlignment.start,
+        //   children: [
+        //     SizedBox(height: 4),
+        //     Text(
+        //       'ລະຫັດ: ${location.code}',
+        //       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+        //     ),
+        //     if (hasCoordinates) ...[
+        //       SizedBox(height: 4),
+        //       Text(
+        //         'ພິກັດ: ${location.latitude!.toStringAsFixed(6)}, ${location.longitude!.toStringAsFixed(6)}',
+        //         style: TextStyle(
+        //           fontSize: 12,
+        //           color: AppColors.color1,
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //     ] else ...[
+        //       SizedBox(height: 4),
+        //       Text(
+        //         'ບໍ່ມີຂໍ້ມູນພິກັດ',
+        //         style: TextStyle(
+        //           fontSize: 12,
+        //           color: Colors.grey[500],
+        //           fontStyle: FontStyle.italic,
+        //         ),
+        //       ),
+        //     ],
+        //   ],
+        // ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isSelected) ...[
-              Icon(Icons.check_circle, color: AppColors.color1, size: 20),
-              SizedBox(width: 8),
-            ],
-            IconButton(
-              onPressed: () {
-                // Set selected location and navigate to map
-                ref
-                    .read(locationProvider.notifier)
-                    .setSelectedLocation(location);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('ເລືອກສະຖານທີ່: ${location.name}'),
-                    backgroundColor: AppColors.color1,
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-                context.push('/location/map');
-              },
-              icon: Icon(
-                hasCoordinates ? Icons.info_outline : Icons.info_outline,
-                color: hasCoordinates ? AppColors.color1 : Colors.grey,
-                size: 20,
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios, color: AppColors.color1, size: 16),
+            // if (isSelected) ...[
+            //   Icon(Icons.check_circle, color: AppColors.color1, size: 20),
+            //   SizedBox(width: 8),
+            // ],
+            // IconButton(
+            //   onPressed: () {
+            //     // Set selected location and navigate to map
+            //     ref
+            //         .read(locationProvider.notifier)
+            //         .setSelectedLocation(location);
+            //     ScaffoldMessenger.of(context).showSnackBar(
+            //       SnackBar(
+            //         content: Text('ເລືອກສະຖານທີ່: ${location.name}'),
+            //         backgroundColor: AppColors.color1,
+            //         duration: Duration(seconds: 1),
+            //       ),
+            //     );
+            //     context.push('/location/map');
+            //   },
+            //   icon: Icon(
+            //     hasCoordinates ? Icons.info_outline : Icons.info_outline,
+            //     color: hasCoordinates ? AppColors.color1 : Colors.grey,
+            //     size: 20,
+            //   ),
+            // ),
+            Icon(Icons.arrow_forward_ios, color: AppColors.color1, size: 16.sp),
           ],
         ),
         onTap: () {
@@ -283,7 +290,7 @@ class _LocationScreenState extends ConsumerState<LocationScreen> {
               duration: Duration(seconds: 1),
             ),
           );
-          context.push('/location/map');
+          context.push('/location/map/${location.id}');
         },
       ),
     );
